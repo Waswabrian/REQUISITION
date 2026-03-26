@@ -88,3 +88,54 @@ body{
     justify-content: center;
     padding-top: 50px;
 } 
+#signees{
+    display: flex;
+    justify-content: flex-start;
+    align-items: space-between;
+    align-content: flex-end;
+    padding-top: 50px;
+    width: 100%;
+}
+
+
+
+/*we give it a try*?*/
+.approval-container {
+    margin-top: 50px;
+    padding: 20px;
+    font-family: Arial, sans-serif;
+}
+
+.approval-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 30px; /* Space between the signee rows */
+    gap: 40px;
+}
+
+.field-group {
+    display: flex;
+    flex: 1; /* Main signature line takes more space */
+    align-items: flex-end;
+}
+
+.date-group {
+    flex: 1; /* Date line is shorter */
+}
+
+.label {
+    white-space: nowrap;
+    font-weight: bold;
+    margin-right: 10px;
+    padding-bottom: 2px;
+}
+
+.line {
+    flex-grow: 1;
+    border-bottom: 1px solid #000; /* Creates the signature line */
+    height: 1.2em;
+}
+
+.small-line {
+    min-width: 120px;
+}
