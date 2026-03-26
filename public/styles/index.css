@@ -1,0 +1,90 @@
+#logo{
+    width: 200px;
+    height:50px;
+}
+body{
+  width: 100%;
+  margin: auto;
+}
+
+#headline{
+    padding-left: 20px;
+    display: flex;
+    justify-content: center;
+    font-size: medium;
+    font-family:"Corbel", "Lucida Grande", "Lucida Sans Unicode", "Segoe UI", sans-serif;
+
+}
+    
+#table1,td,tr {
+    font-family:"Corbel", "Lucida Grande", "Lucida Sans Unicode", "Segoe UI", sans-serif;
+    border: solid;
+    border-color: black;
+    border-width: 0.5px;
+    border-collapse: collapse;
+   
+    
+
+}
+#table1 td {
+  border: 1px solid black; 
+  color: black;            
+  padding: 10px 15px;       
+  font-weight: bold;         
+  text-align: center;
+}
+#table1 td:first-child {
+  width: 30%; 
+}
+   
+/* #datae{
+    padding-top: 50px;
+    width:200px;    
+} */
+/*style="height:20px;width:300px;border:solid;border-width:0.5px;border-collapse: collapse;"`*/
+
+
+#date{
+    display: flex;
+    justify-content: center;
+    padding-top: 50px;
+}
+#table2{
+    margin:5px;
+    margin-right:0px;
+    /* margin-left:10px; */
+    justify-self:space-around;
+}
+#table2,td,tr {
+  padding: 5px 5px;
+  border: 1px solid black;
+  text-align: center;
+  border-collapse: collapse;
+  width: auto;
+  
+  
+} 
+#costs{
+    display: flex;
+  /*  justify-content: center;*/
+    padding-top: 50px;
+    margin:20px;
+    margin-right: 10px;
+}
+
+#table2.table-input {
+  width: 50%;
+  background: transparent; /* Makes it blend with the table bg */
+  border: none;            /* Removes default input borders */
+  color: white;            /* Matches your table text */
+  font-family: inherit;    /* Uses Corbel/system-ui from the table */
+  font-size: 1rem;
+  outline: none;           /* Removes the blue ring on click */
+  padding: 0px;
+}
+
+.approval{
+    display: flex;
+    justify-content: center;
+    padding-top: 50px;
+} 

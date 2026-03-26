@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>ICT Requisition form</title> 
+        <link rel="stylesheet" href="/styles/index.css">
+    </head>
+    <body>
+        <div class="top">
+            <img src="/Images/octagon-logo.png" id="logo">
+            <h2 id="headline"><u>PURCHASE REQUISITION FORM</u></h2>
+        </div>
+
+        <div class="tables">
+            <section id="date">
+            <form>
+                <table id="table1">
+                    <tr>
+                        <td>DATE</td>
+                        <td id="datae"> <input type="date" placeholder="1" style="border:none;"></td>
+                    </tr>
+                     <tr>
+                        <td id="datae"  > DEPARTMENT</td>
+                        <td><select><option>Department</option>
+                        <option>IT</option>
+                        <option>HR</option>
+                        <option>Finance</option>
+                        <option>HR</option>
+                        <option>HR</option>
+                        </select></td>
+                        
+                    </tr>   
+                </table>
+            </form>
+            </section>
+        </div>     
+
+        <div class="tables2">
+            <section id="costs">
+            <form>    
+                <table id="table2">
+                    <tr style="font-weight: bold;">
+                        <td>S/N</td>
+                        <td>Budget Line </td>
+                        <td>Cost centre </td>
+                        <td>Item Description</td>
+                        <td>Quantity </td>
+                        <td>Unit </td>
+                        <td>Total</td>
+                    </tr>
+                     <tr>
+                        <td > <input type="number" placeholder="" style="border:none;"></td>
+                        <td> <input type="text" placeholder="1" style="border:none;"></td>
+                        <td> <input type="text" placeholder="1" style="border:none;"></td>
+                        <td> <textarea style="border:none;"></textarea></td>
+                        <td> <input type="number" placeholder="1" style="border:none;"></td>    
+                        <td> <input type="number" placeholder="1" style="border:none;"></td>
+                        <td> <input type="text" placeholder="1" style="border:none;"></td>
+                        <td><button type="button" id="add-row" onclick="addRow()">+</button></td>
+                    </tr>
+                    <!-- <tr>
+                        <td><button type="button" onclick="addRow()">Add Items</button></td>
+                    </tr>
+                     -->
+                    
+                    
+                </table>
+             
+            </form>
+            </section>
+        </div>
+
+    <div class="approval">
+        <section>
+            <div><p><b>Prepared by:</b></p></div>
+            <div><p>Date:</p></div>
+        </section><br>
+        <section>
+            <div>Checked by:</div>
+            <div>Signature:</div>
+        </section><br>
+        <section>
+            <div>Authorized by Finance:</div>
+            <div>Signature:</div>
+        </section><br>
+        <section>
+            <div>Approved by:</div>
+            <div>Signature:</div>
+        </section>
+    </div>
+        <script src="/scripts/table-logic.js"></script>
+    </body>
+
+</html>

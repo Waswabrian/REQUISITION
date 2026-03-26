@@ -1,0 +1,24 @@
+{
+  "name": "requisition",
+  "version": "1.0.0",
+  "description": "purchase requisition form",
+  "repository": {
+    "type": "git",
+    "url": "C:\\Users\\brian.wekesa\\OneDrive - Octagon Africa\\Documents\\REQUISITION"
+  },
+  "license": "ISC",
+  "author": "Waswa",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "npm run"
+  },
+  "dependencies": {
+    "content-type": "^1.0.5",
+    "cookie-parser": "^1.4.7",
+    "ejs": "^5.0.1",
+    "express": "^5.2.1",
+    "express-session": "^1.19.0",
+    "formidable": "^3.5.4"
+  }
+}
