@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Finance Verification</title>
+    <link rel="stylesheet" href="/styles/index.css">
+    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
+</head>
+<body>
+    <h2>Finance Authorization</h2>
+
+    <div class="audit-trail">
+        <p><strong>Prepared by:</strong> Brian Wekesa </p>
+        <p><strong>HOD Signature:</strong> <img src="<%= requisition.hodSignature %>" width="150"></p>
+        <p><strong>Supporting Doc:</strong> <a href="<%= requisition.attachment %>" target="_blank">View Attachment</a></p>
+    </div>
+
+    <table id="table2">
+        <tr style="font-weight: bold;">
+            <td>Budget Line</td>
+            <td>Description</td>
+            <td>Total</td>
+        </tr>
+        <% requisition.items.forEach(item => { %>
+        <tr>
+            <td><%= item.budgetLine %></td>
+            <td><%= item.description %></td>
+            <td><%= item.total %></td>
+        </tr>
+        <% }) %>
+    </table>
+
+    <form id="financeForm" action="/finance/submit-approval/<%= requisition.id %>" method="POST">
+        <div class="approval-row">
+            <span class="label">Finance Signature:</span>
+            <canvas id="finance-pad" style="border: 1px solid #000;"></canvas>
+            <input type="hidden" name="signature" id="finance-sig-data">
+        </div>
+        <button type="submit" name="action" value="approve">Authorize & Send to Director</button>
+    </form>
+
+    <script>
+        const canvas = document.getElementById('finance-pad');
+        const pad = new SignaturePad(canvas);
+        document.getElementById('financeForm').onsubmit = () => {
+            document.getElementById('finance-sig-data').value = pad.toDataURL();
+        };
+    </script>
+</body>
+</html>

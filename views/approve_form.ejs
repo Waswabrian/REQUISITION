@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>HOD Approval - Requisition <%= requisition.id %></title>
+    <link rel="stylesheet" href="/styles/index.css">
+    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
+</head>
+<body>
+    <div class="top">
+        <img src="/Images/octagon-logo.png" id="logo">
+        <h2>HOD APPROVAL INTERFACE</h2>
+    </div>
+
+    <div class="summary-box">
+        <p><strong>Staff:</strong> <%= requisition.staffName || 'Brian Wekesa' %></p>
+        <p><strong>Department:</strong> <%= requisition.department %></p>
+        <p><strong>Date:</strong> <%= requisition.requestDate %></p>
+    </div>
+
+    <table id="table2">
+        <tr style="font-weight: bold;">
+            <td>Item Description</td>
+            <td>Quantity</td>
+            <td>Unit</td>
+            <td>Total</td>
+        </tr>
+        <% requisition.items.forEach(item => { %>
+        <tr>
+            <td><%= item.description %></td>
+            <td><%= item.qty %></td>
+            <td><%= item.unit %></td>
+            <td><%= item.total %></td>
+        </tr>
+        <% }) %>
+    </table>
+
+    <form id="approvalForm" action="/hod/submit-approval/<%= requisition.id %>" method="POST">
+        <div class="approval-container">
+            <h3>HOD/Supervisor Action</h3>
+            <canvas id="signature-pad" style="border: 1px solid #000; width: 400px; height: 200px;"></canvas>
+            <input type="hidden" name="signature" id="signature-db">
+            
+            <div style="margin-top: 20px;">
+                <button type="submit" name="action" value="approve" style="background: green; color: white;">Approve to Finance</button>
+                <button type="submit" name="action" value="reject" style="background: red; color: white;">Reject Request</button>
+            </div>
+        </div>
+    </form>
+
+    <script>
+        const canvas = document.getElementById('signature-pad');
+        const signaturePad = new SignaturePad(canvas);
+        const form = document.getElementById('approvalForm');
+
+        form.onsubmit = function() {
+            if (signaturePad.isEmpty()) {
+                alert("Please provide a signature before approving.");
+                return false;
+            }
+            // Save signature as Base64 string to the hidden input
+            document.getElementById('signature-db').value = signaturePad.toDataURL();
+            return true;
+        };
+    </script>
+</body>
+</html>

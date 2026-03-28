@@ -16,16 +16,17 @@
                 <table id="table1">
                     <tr>
                         <td>DATE</td>
-                        <td id="datae"> <input type="date" placeholder="1" style="border:none;"></td>
+                        <td id="datae"> <input type="date" name="requestdate" id="date" style="border:none;"></td>
                     </tr>
                      <tr>
                         <td id="datae"  > DEPARTMENT</td>
                         <td><select><option>Department</option>
-                        <option>IT</option>
-                        <option>HR</option>
-                        <option>Finance</option>
-                        <option>HR</option>
-                        <option>HR</option>
+                        <option value="Admin">Admin</option>
+                        <option value="HR">HR</option>
+                        <option value="finance">Finance</option>
+                        <option value="support">Customer Experience</option>
+                        <option value="IT">IT</option>
+                        <option value="BD">BD</option>
                         </select></td>
                         
                     </tr>   
@@ -38,6 +39,7 @@
             <section id="costs">
             <form>    
                 <table id="table2">
+                    <thead>
                     <tr style="font-weight: bold;">
                         <td>S/N</td>
                         <td>Budget Line </td>
@@ -47,6 +49,8 @@
                         <td>Unit </td>
                         <td>Total</td>
                     </tr>
+                    </thead>
+                    <tbody id="itembody">
                      <tr>
                         <td > <input type="number" placeholder="" style="border:none;"></td>
                         <td> <input type="text" placeholder="1" style="border:none;"></td>
@@ -57,6 +61,7 @@
                         <td> <input type="text" placeholder="1" style="border:none;"></td>
                         <td><button type="button" id="add-row" onclick="addRow()">+</button></td>
                     </tr>
+                    </tbody>
                     <!-- <tr>
                         <td><button type="button" onclick="addRow()">Add Items</button></td>
                     </tr>
@@ -98,46 +103,55 @@
     <div class="approval-row">
         <div class="field-group">
             <span class="label">Prepared by:</span>
-            <div class="line"></div>
+            <div class="line">{username}</div>
         </div>
         <div class="field-group date-group">
             <span class="label">Date:</span>
-            <div class="line small-line"></div>
+            <div class="line small-line">{date}</div>
         </div>
     </div>
 
     <div class="approval-row">
         <div class="field-group">
             <span class="label">Checked by: HOD/ Supervisor:</span>
-            <div class="line"></div>
+            <!-- <div class="line"><button><input type="text" style="border:none;"></button></div> -->
+            <div><button><input type="text" style="border:none;"></button></div>
         </div>
         <div class="field-group">
             <span class="label">Signature:</span>
-            <div class="line"></div>
+            <!-- <div class="line">{upload online signature}\if can draw </div> -->
+            <input type="file" name="supportDoc"  id="supportDoc" class="line">
         </div>
     </div>
 
     <div class="approval-row">
         <div class="field-group">
             <span class="label">Authorized by: Finance:</span>
-            <div class="line"></div>
+            <!-- <div class="line"></div> -->
+            <div><button style="margin-left:50px;"><input type="text" style="border:none;"></button></div>
         </div>
         <div class="field-group">
             <span class="label">Signature:</span>
-            <div class="line"></div>
+            <!-- <div class="line"></div> -->
+            <input type="file" name="supportDoc"  id="supportDoc" class="line">
         </div>
     </div>
 
     <div class="approval-row">
         <div class="field-group">
             <span class="label">Approved by: Director:</span>
-            <div class="line"></div>
+            <!-- <div class="line"></div> -->
+              <div><button style="margin-left:55px;"><input type="text" style="border:none;"></button></div>    
         </div>
         <div class="field-group">
             <span class="label">Signature:</span>
-            <div class="line"></div>
+            <!-- <div class="line"></div> -->
+            <input type="file" name="supportDoc"  id="supportDoc" class="line"></div>
         </div>
     </div>
+</div>
+<div class="submit-btn">
+    <button id ="submit" type="submit" action="submit" onclick="submit()">Request</button>
 </div>
         <script src="/scripts/table-logic.js"></script>
     </body>

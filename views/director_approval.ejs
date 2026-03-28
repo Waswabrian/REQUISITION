@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Director Final Approval</title>
+    <link rel="stylesheet" href="/styles/index.css">
+    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
+</head>
+<body>
+    <h2>Final Approval: Purchase Requisition</h2>
+
+    <div class="approval-history" style="background: #f9f9f9; padding: 15px; border-radius: 8px;">
+        <p><strong>HOD/Supervisor:</strong> Approved <img src="<%= requisition.hodSignature %>" width="100"></p>
+        <p><strong>Finance Authorization:</strong> Approved <img src="<%= requisition.financeSignature %>" width="100"></p>
+    </div>
+
+    <div class="items-display">
+        <h3>Requisition Details</h3>
+        <table id="table2">
+            <thead>
+                <tr style="font-weight: bold;">
+                    <td>Description</td>
+                    <td>Qty</td>
+                    <td>Total</td>
+                </tr>
+            </thead>
+            <tbody>
+                <% requisition.items.forEach(item => { %>
+                <tr>
+                    <td><%= item.description %></td>
+                    <td><%= item.qty %></td>
+                    <td><%= item.total %></td>
+                </tr>
+                <% }) %>
+            </tbody>
+        </table>
+    </div>
+
+    <form id="directorForm" action="/director/submit-approval/<%= requisition.id %>" method="POST">
+        <div class="approval-row">
+            <span class="label">Director Signature:</span>
+            <canvas id="director-pad" style="border: 1px solid #000; width: 400px; height: 150px;"></canvas>
+            <input type="hidden" name="signature" id="director-sig-data">
+        </div>
+        <div style="margin-top: 20px;">
+            <button type="submit" name="action" value="approve" style="background: navy; color: white; padding: 10px 25px;">Final Approval</button>
+            <button type="submit" name="action" value="reject" style="background: darkred; color: white; padding: 10px 25px;">Decline</button>
+        </div>
+    </form>
+
+    <script>
+        const canvas = document.getElementById('director-pad');
+        const pad = new SignaturePad(canvas);
+        document.getElementById('directorForm').onsubmit = () => {
+            if (pad.isEmpty()) {
+                alert("Signature required for final approval.");
+                return false;
+            }
+            document.getElementById('director-sig-data').value = pad.toDataURL();
+            return true;
+        };
+    </script>
+</body>
+</html>
