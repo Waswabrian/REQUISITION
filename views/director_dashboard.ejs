@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Director Dashboard</title>
+    <link rel="stylesheet" href="/styles/index.css">
+</head>
+<body>
+    <h2>Director Dashboard: Pending Final Approvals</h2>
+    <a href="/finance/dashboard">Back to Finance Dashboard</a>
+
+    <% if (!requests || requests.length === 0) { %>
+        <p>No requisitions waiting for director approval.</p>
+    <% } else { %>
+        <table id="table2">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Staff</th>
+                    <th>Department</th>
+                    <th>Date</th>
+                    <th>Total</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% requests.forEach((req) => { %>
+                <tr>
+                    <td><%= req.id %></td>
+                    <td><%= req.staffName %></td>
+                    <td><%= req.department %></td>
+                    <td><%= req.requestDate %></td>
+                    <td><%= req.items.reduce((sum, item) => sum + Number(item.total || 0), 0).toFixed(2) %></td>
+                    <td><a href="/director/approval/<%= req.id %>">Finalize</a></td>
+                </tr>
+                <% }) %>
+            </tbody>
+        </table>
+    <% } %>
+</body>
+</html>

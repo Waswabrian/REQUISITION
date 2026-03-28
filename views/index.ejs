@@ -12,7 +12,7 @@
 
         <div class="tables">
             <section id="date">
-            <form>
+            <form action="/index.js" method="POST">
                 <table id="table1">
                     <tr>
                         <td>DATE</td>
@@ -37,7 +37,7 @@
 
         <div class="tables2">
             <section id="costs">
-            <form>    
+            <form action="index.ejs" method="post">    
                 <table id="table2">
                     <thead>
                     <tr style="font-weight: bold;">
@@ -47,6 +47,7 @@
                         <td>Item Description</td>
                         <td>Quantity </td>
                         <td>Unit </td>
+                        <td>VAT</td>
                         <td>Total</td>
                     </tr>
                     </thead>
@@ -57,8 +58,10 @@
                         <td> <input type="text" placeholder="1" style="border:none;"></td>
                         <td> <textarea style="border:none;"></textarea></td>
                         <td> <input type="number" placeholder="1" style="border:none;"></td>    
-                        <td> <input type="number" placeholder="1" style="border:none;"></td>
+                        <td> </td>
+                        <td> <input type="button" placeholder="VAT" id="VAT" style="border:none;"></td>
                         <td> <input type="text" placeholder="1" style="border:none;"></td>
+                        
                         <td><button type="button" id="add-row" onclick="addRow()">+</button></td>
                     </tr>
                     </tbody>
@@ -151,7 +154,7 @@
     </div>
 </div>
 <div class="submit-btn">
-    <button id ="submit" type="submit" action="submit" onclick="submit()">Request</button>
+    <button id ="submit" type="submit" action="POST" onclick="submit()">Request</button>
 </div>
         <script src="/scripts/table-logic.js"></script>
     </body>
