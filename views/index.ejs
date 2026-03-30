@@ -10,34 +10,45 @@
             <h2 id="headline"><u>PURCHASE REQUISITION FORM</u></h2>
         </div>
 
+        <!-- <nav class="main-nav">
+            <a href="/">New Requisition</a>
+            <a href="/hod/dashboard">HOD Dashboard</a>
+            <a href="/finance/dashboard">Finance Dashboard</a>
+            <a href="/director/dashboard">Director Dashboard</a>
+        </nav> -->
+        <%- include('partials/nav') %>
+
         <div class="tables">
             <section id="date">
-            <form action="/index.js" method="POST">
+            <form action="/requisition/submit-to-hod" method="POST">
                 <table id="table1">
                     <tr>
                         <td>DATE</td>
                         <td id="datae"> <input type="date" name="requestdate" id="date" style="border:none;"></td>
                     </tr>
+                    <tr>
+                        <td>STAFF NAME</td>
+                        <td id="datae"> <input type="text" name="staffName" placeholder="Your name" style="border:none; width: 100%;"></td>
+                    </tr>
                      <tr>
                         <td id="datae"  > DEPARTMENT</td>
-                        <td><select><option>Department</option>
+                        <td><select name="department"><option value="">Department</option>
                         <option value="Admin">Admin</option>
                         <option value="HR">HR</option>
-                        <option value="finance">Finance</option>
-                        <option value="support">Customer Experience</option>
+                        <option value="Finance">Finance</option>
+                        <option value="Customer Experience">Customer Experience</option>
                         <option value="IT">IT</option>
                         <option value="BD">BD</option>
                         </select></td>
                         
                     </tr>   
                 </table>
-            </form>
+            <!-- keep form open until after table2 -->
             </section>
         </div>     
 
         <div class="tables2">
             <section id="costs">
-            <form action="index.ejs" method="post">    
                 <table id="table2">
                     <thead>
                     <tr style="font-weight: bold;">
@@ -53,18 +64,29 @@
                     </thead>
                     <tbody id="itembody">
                      <tr>
-                        <td > <input type="number" placeholder="" style="border:none;"></td>
-                        <td> <input type="text" placeholder="1" style="border:none;"></td>
-                        <td> <input type="text" placeholder="1" style="border:none;"></td>
-                        <td> <textarea style="border:none;"></textarea></td>
-                        <td> <input type="number" placeholder="1" style="border:none;"></td>    
-                        <td> </td>
-                        <td> <input type="button" placeholder="VAT" id="VAT" style="border:none;"></td>
-                        <td> <input type="text" placeholder="1" style="border:none;"></td>
-                        
+                        <td class="sn-cell">1</td>
+                        <td> <input type="text" name="budgetLine[]" style="border:none;"></td>
+                        <td> <input type="text" name="costCentre[]" style="border:none;"></td>
+                        <td> <textarea name="description[]" style="border:none;"></textarea></td>
+                        <td> <input type="number" name="qty[]" class="qty-input" min="0" style="border:none;"></td>
+                        <td> <input type="number" name="unit[]" class="unit-input" min="0" step="0.01" style="border:none;"></td>
+                        <td> <input type="number" name="VAT[]" class="VAT-input" readonly style="border:none;"></td>
+                        <td> <input type="number" name="total[]" class="total-input" readonly style="border:none;"></td>
                         <td><button type="button" id="add-row" onclick="addRow()">+</button></td>
                     </tr>
                     </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="7" style="text-align: right; font-weight: bold;">Grand Total</td>
+                            <td><input type="number" id="grand-total" name="grandTotal" readonly style="border:none; font-weight: bold;"></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td colspan="9" style="text-align: center; padding: 12px 0;">
+                                <button id="submit" type="submit">Request</button>
+                            </td>
+                        </tr>
+                    </tfoot>
                     <!-- <tr>
                         <td><button type="button" onclick="addRow()">Add Items</button></td>
                     </tr>
@@ -72,7 +94,7 @@
                     
                     
                 </table>
-             
+            
             </form>
             </section>
         </div>
@@ -101,61 +123,39 @@
             <p>Signature:</p>
             </div></section>
          -->
-    <!-- </div> -->
-     <div class="approval-container">
-    <div class="approval-row">
-        <div class="field-group">
-            <span class="label">Prepared by:</span>
-            <div class="line">{username}</div>
-        </div>
-        <div class="field-group date-group">
-            <span class="label">Date:</span>
-            <div class="line small-line">{date}</div>
-        </div>
-    </div>
+    <!-- Requisition progress tracker -->
+    <section class="progress-tracker" style="margin-top: 20px; width: 100%;">
+        <h3>My Requisition Progress</h3>
+        <% if (requisitions && requisitions.length > 0) { %>
+            <table id="tracking-table" style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr>
+                        <th style="border: 1px solid #ddd; padding: 8px;">ID</th>
+                        <th style="border: 1px solid #ddd; padding: 8px;">Staff</th>
+                        <th style="border: 1px solid #ddd; padding: 8px;">Department</th>
+                        <th style="border: 1px solid #ddd; padding: 8px;">Request Date</th>
+                        <th style="border: 1px solid #ddd; padding: 8px;">Status</th>
+                        <th style="border: 1px solid #ddd; padding: 8px;">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                <% requisitions.forEach(req => { %>
+                <tr>
+                    <td style="border: 1px solid #ddd; padding: 8px;"><%= req.id %></td>
+                    <td style="border: 1px solid #ddd; padding: 8px;"><%= req.staffName %></td>
+                    <td style="border: 1px solid #ddd; padding: 8px;"><%= req.department %></td>
+                    <td style="border: 1px solid #ddd; padding: 8px;"><%= new Date(req.requestDate).toLocaleDateString() %></td>
+                    <td style="border: 1px solid #ddd; padding: 8px;"><strong><%= req.status %></strong></td>
+                    <td style="border: 1px solid #ddd; padding: 8px;"><a href="/hod/approval/<%= req.id %>">View</a></td>
+                </tr>
+                <% }) %>
+                </tbody>
+            </table>
+        <% } else { %>
+            <p>No previous requisitions found yet. Submit one and it will appear here.</p>
+        <% } %>
+    </section>
 
-    <div class="approval-row">
-        <div class="field-group">
-            <span class="label">Checked by: HOD/ Supervisor:</span>
-            <!-- <div class="line"><button><input type="text" style="border:none;"></button></div> -->
-            <div><button><input type="text" style="border:none;"></button></div>
-        </div>
-        <div class="field-group">
-            <span class="label">Signature:</span>
-            <!-- <div class="line">{upload online signature}\if can draw </div> -->
-            <input type="file" name="supportDoc"  id="supportDoc" class="line">
-        </div>
-    </div>
-
-    <div class="approval-row">
-        <div class="field-group">
-            <span class="label">Authorized by: Finance:</span>
-            <!-- <div class="line"></div> -->
-            <div><button style="margin-left:50px;"><input type="text" style="border:none;"></button></div>
-        </div>
-        <div class="field-group">
-            <span class="label">Signature:</span>
-            <!-- <div class="line"></div> -->
-            <input type="file" name="supportDoc"  id="supportDoc" class="line">
-        </div>
-    </div>
-
-    <div class="approval-row">
-        <div class="field-group">
-            <span class="label">Approved by: Director:</span>
-            <!-- <div class="line"></div> -->
-              <div><button style="margin-left:55px;"><input type="text" style="border:none;"></button></div>    
-        </div>
-        <div class="field-group">
-            <span class="label">Signature:</span>
-            <!-- <div class="line"></div> -->
-            <input type="file" name="supportDoc"  id="supportDoc" class="line"></div>
-        </div>
-    </div>
-</div>
-<div class="submit-btn">
-    <button id ="submit" type="submit" action="POST" onclick="submit()">Request</button>
-</div>
         <script src="/scripts/table-logic.js"></script>
     </body>
 

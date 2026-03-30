@@ -2,11 +2,24 @@
 <html>
 <head>
     <title>Director Final Approval</title>
-    <link rel="stylesheet" href="/styles/index.css">
+    <link rel="stylesheet" href="/styles/director_approval.css">
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
 </head>
 <body>
-    <h2>Final Approval: Purchase Requisition</h2>
+    <div class="top">
+            <img src="/Images/octagon-logo.png" id="logo">
+            <h2 id="headline"><u>DIRECTOR'S APRROVAL</u></h2>
+    </div>
+
+
+    <nav class="main-nav">
+        <a href="/">New Requisition</a>
+        <a href="/hod/dashboard">HOD Dashboard</a>
+        <a href="/finance/dashboard">Finance Dashboard</a>
+        <a href="/director/dashboard">Director Dashboard</a>
+    </nav>
+
+    
 
     <div class="approval-history" style="background: #f9f9f9; padding: 15px; border-radius: 8px;">
         <p><strong>HOD/Supervisor:</strong> Approved <img src="<%= requisition.hodSignature %>" width="100"></p>

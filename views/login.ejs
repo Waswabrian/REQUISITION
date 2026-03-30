@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | Octagon Requisition System</title>
+    <link rel="stylesheet" href="/styles/index.css">
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #f1f5f9;
+            margin: 0;
+        }
+
+        .login-card {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        #logo {
+            max-width: 150px;
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            color: #1e3a8a;
+            margin-bottom: 8px;
+            font-size: 1.5rem;
+        }
+
+        p {
+            color: #64748b;
+            font-size: 0.9rem;
+            margin-bottom: 24px;
+        }
+
+        .form-group {
+            text-align: left;
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #475569;
+            margin-bottom: 6px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #1e3a8a;
+            ring: 2px solid #bfdbfe;
+        }
+
+        .btn-login {
+            width: 100%;
+            background-color: #1e3a8a;
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 10px;
+        }
+
+        .btn-login:hover {
+            background-color: #172554;
+        }
+
+        .error-msg {
+            color: #b91c1c;
+            background: #fee2e2;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            margin-bottom: 16px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-card">
+        <img src="/Images/octagon-logo.png" id="logo" alt="Octagon Africa">
+        <h2>Welcome Back</h2>
+        <p>Please sign in to your account</p>
+
+        <% if (locals.error) { %>
+            <div class="error-msg"><%= error %></div>
+        <% } %>
+
+        <form action="/login" method="POST">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" name="username" id="username" required placeholder="e.g. brian.wekesa">
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" name="password" id="password" required placeholder="••••••••">
+            </div>
+
+            <button type="submit" class="btn-login">Sign In</button>
+        </form>
+    </div>
+
+</body>
+</html>

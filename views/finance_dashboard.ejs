@@ -2,11 +2,19 @@
 <html>
 <head>
     <title>Finance Dashboard</title>
-    <link rel="stylesheet" href="/styles/index.css">
+    <link rel="stylesheet" href="/styles/finance_dashboard.css">
 </head>
 <body>
-    <h2>Finance Dashboard: Pending Requisitions</h2>
-    <a href="/hod/dashboard">Back to HOD Dashboard</a>
+    <div class="top">
+            <img src="/Images/octagon-logo.png" id="logo">
+            <h2 id="headline"><u>FINANCE DASHBOARD</u></h2>
+    </div>
+    <nav class="main-nav">
+        <a href="/">New Requisition</a>
+        <a href="/hod/dashboard">HOD Dashboard</a>
+        <a href="/finance/dashboard">Finance Dashboard</a>
+        <a href="/director/dashboard">Director Dashboard</a>
+    </nav>
 
     <% if (!requests || requests.length === 0) { %>
         <p>No requisitions waiting for finance authorization.</p>

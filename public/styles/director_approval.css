@@ -1,0 +1,227 @@
+body {
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background-color: #f0f2f5;
+    padding: 40px;
+    color: #1a202c;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    background: white;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+    color: #1e3a8a; /* Deep Navy */
+    border-bottom: 2px solid #e2e8f0;
+    padding-bottom: 15px;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+/* Approval History "Steps" */
+.approval-history {
+    display: flex;
+    justify-content: space-around;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 30px;
+}
+
+.history-item {
+    text-align: center;
+}
+
+.history-item strong {
+    display: block;
+    font-size: 0.75rem;
+    color: #64748b;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+}
+
+.history-item img {
+    border-bottom: 1px solid #cbd5e1;
+    mix-blend-mode: multiply;
+}
+
+/* Items Table */
+.items-display h3 {
+    font-size: 1.1rem;
+    color: #475569;
+    margin-bottom: 15px;
+}
+
+#table2 {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 40px;
+}
+
+#table2 td {
+    padding: 12px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+#table2 thead td {
+    background: #f8fafc;
+    font-weight: bold;
+    color: #1e3a8a;
+}
+
+/* Signature Pad */
+.signature-section {
+    border-top: 2px solid #f1f5f9;
+    padding-top: 30px;
+}
+
+#director-pad {
+    background: #fff;
+    border: 2px solid #cbd5e1;
+    border-radius: 8px;
+    cursor: url('https://www.google.com/intl/en_ALL/images/srpr/logo1w.png'), crosshair;
+    display: block;
+    margin: 10px 0;
+}
+
+.label {
+    font-weight: 700;
+    color: #334155;
+}
+
+/* Action Buttons */
+.button-group {
+    display: flex;
+    gap: 15px;
+    margin-top: 30px;
+}
+
+.btn {
+    flex: 1;
+    padding: 15px;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: transform 0.1s, opacity 0.2s;
+}
+
+.btn-approve {
+    background: #1e3a8a;
+    color: white;
+}
+
+.btn-reject {
+    background: #991b1b;
+    color: white;
+}
+
+.btn:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+.btn:active {
+    transform: translateY(0);
+}
+
+#directorForm {
+    max-width: 600px;
+    margin: 0 auto 26px;
+    padding: 20px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.06);
+}
+
+.approval-row {
+    margin-bottom: 14px;
+}
+
+.approval-row .label {
+    display: block;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: #1e3a8a;
+}
+
+#director-pad {
+    width: 100%;
+    min-height: 180px;
+    border: 2px dashed #cbd5e1;
+    border-radius: 8px;
+    background: #f9fafb;
+    cursor: crosshair;
+}
+
+#director-pad:hover {
+    border-color: #4f46e5;
+    background: #fff;
+}
+
+#directorForm button {
+    display: inline-block;
+    margin-right: 10px;
+    padding: 10px 18px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+#directorForm button[value="approve"] {
+    background: #1e3a8a;
+    color: white;
+}
+
+#directorForm button[value="approve"]:hover {
+    background: #1e40af;
+    transform: translateY(-1px);
+}
+
+#directorForm button[value="reject"] {
+    background: #991b1b;
+    color: white;
+}
+
+#directorForm button[value="reject"]:hover {
+    background: #7f1d1d;
+    transform: translateY(-1px);
+}
+
+#logo{
+    width: 200px;
+    height:50px;
+}
+body{
+  width: 100%;
+  margin: auto;
+}
+
+.main-nav {
+    background: #1e3a8a;
+    padding: 0.6rem 1rem;
+    text-align: center;
+    border-radius: 8px;
+    margin: 1rem auto;
+    max-width: 980px;
+}
+
+.main-nav a {
+    color: #fff;
+    text-decoration: none;
+    margin: 0 0.8rem;
+    font-weight: 600;
+}
+
+.main-nav a:hover {
+    text-decoration: underline;
+}

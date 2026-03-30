@@ -13,15 +13,26 @@ const mysql = require('mysql2');
 
 // Create the connection pool
 const pool = mysql.createPool({
-  host: 'localhost',
-  port: 3306,
-  user: 'root',          // Your MySQL username
-  password: 'your_password', // Your MySQL password
-  database: 'octagon_requisition',
+  host: process.env.DB_HOST || 'localhost',
+  port: process.env.DB_PORT || 3306,
+  user: process.env.DB_USER || 'root',          // Your MySQL username
+  password: process.env.DB_PASSWORD || '', // Your MySQL password
+  database: process.env.DB_NAME || 'octagon_requisition',
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0
 });
+
+console.log('DB: connecting with', {
+  host: process.env.DB_HOST || 'localhost',
+  port: process.env.DB_PORT || 3306,
+  user: process.env.DB_USER || 'root',
+  database: process.env.DB_NAME || 'octagon_requisition'
+});
+
+if ((process.env.DB_PASSWORD || '') === '') {
+  console.warn('DB WARNING: replace config/db.js password with your real MySQL password or set DB_PASSWORD env var.');
+}
 
 // Export the promise-based version for async/await
 module.exports = pool.promise();

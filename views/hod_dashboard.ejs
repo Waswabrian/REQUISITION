@@ -1,40 +1,223 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>HOD Dashboard</title>
-    <link rel="stylesheet" href="/styles/index.css">
+    <title>HOD Dashboard - Requisition System</title>
+    <link rel="stylesheet" href="/styles/hod_dashboard.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f4f4f4;
+        }
+        .top {
+            background: #0071bc;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        #logo {
+            height: 50px;
+        }
+        .top h3 {
+            margin: 0;
+            color: white;
+        }
+        nav.main-nav {
+            background: #333;
+            padding: 10px 20px;
+            display: flex;
+            gap: 20px;
+        }
+        nav.main-nav a {
+            color: white;
+            text-decoration: none;
+            padding: 5px 10px;
+        }
+        nav.main-nav a:hover {
+            background: #555;
+            border-radius: 3px;
+        }
+        .part1 {
+            padding: 20px;
+            background: white;
+            margin: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px;
+            width: calc(100% - 40px);
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #0071bc;
+            color: white;
+            font-weight: bold;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 20px;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 20px;
+        }
+        h2 {
+            margin: 20px;
+            color: #333;
+        }
+        .btn-review {
+            background: #0071bc;
+            color: white;
+            padding: 5px 10px;
+            text-decoration: none;
+            border-radius: 3px;
+            display: inline-block;
+        }
+        .btn-review:hover {
+            background: #005c99;
+        }
+        .links {
+            margin: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .links a {
+            color: #0071bc;
+            text-decoration: none;
+            margin: 0 10px;
+        }
+        .links a:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
 <body>
-    <h2>HOD Dashboard: Pending Requisitions</h2>
-    <a href="/">New Requisition</a>
+    <div class="top">
+        <img src="/Images/octagon-logo.png" id="logo" alt="Octagon Logo">
+        <h3>HOD APPROVAL INTERFACE</h3>
+    </div>
 
-    <% if (!requests || requests.length === 0) { %>
-        <p>No pending requisitions.</p>
-    <% } else { %>
-        <table id="table2">
+    <nav class="main-nav">
+        <a href="/">New Requisition</a>
+        <a href="/hod/dashboard">HOD Dashboard</a>
+        <a href="/finance/dashboard">Finance Dashboard</a>
+        <a href="/director/dashboard">Director Dashboard</a>
+    </nav>
+    
+    <div class="part1">
+        <h1>HOD Dashboard</h1>
+        <p><h3>Welcome, <%= user %> | <a href="/logout">Logout</a></h3></p>
+    </div>
+    
+    <% if (success) { %>
+        <div class="success"><%= success %></div>
+    <% } %>
+    
+    <% if (error) { %>
+        <div class="error"><%= error %></div>
+    <% } %>
+    
+    <h2>Pending Requisitions</h2>
+    
+    <% if (requests && requests.length > 0) { %>
+         <table>
             <thead>
                 <tr>
                     <th>ID</th>
-                    <th>Staff</th>
+                    <th>Staff Name</th>
                     <th>Department</th>
-                    <th>Date</th>
-                    <th>Total</th>
+                    <th>Request Date</th>
+                    <th>Total Amount</th>
+                    <th>Status</th>
                     <th>Action</th>
                 </tr>
             </thead>
             <tbody>
-                <% requests.forEach((req) => { %>
+                <% requests.forEach(function(req) { 
+                    // SAFE CALCULATION - handles both string and array
+                    let total = 0;
+                    
+                    if (req.items) {
+                        try {
+                            // Check if items is a string, parse it
+                            let itemsArray = req.items;
+                            if (typeof req.items === 'string') {
+                                itemsArray = JSON.parse(req.items);
+                            }
+                            
+                            // Calculate total if it's an array
+                            if (Array.isArray(itemsArray)) {
+                                total = itemsArray.reduce(function(sum, item) {
+                                    return sum + (Number(item.total) || Number(item.qty) * Number(item.unitPrice) || 0);
+                                }, 0);
+                            } else if (req.grandTotal) {
+                                total = Number(req.grandTotal);
+                            }
+                        } catch(e) {
+                            console.error('Error parsing items:', e);
+                            total = Number(req.grandTotal) || 0;
+                        }
+                    } else if (req.grandTotal) {
+                        total = Number(req.grandTotal);
+                    }
+                    
+                    // Get status display
+                    let statusDisplay = req.status;
+                    if (req.status === 'PENDING_HOD') statusDisplay = 'Pending HOD';
+                    if (req.status === 'PENDING_FINANCE') statusDisplay = 'Pending Finance';
+                    if (req.status === 'PENDING_DIRECTOR') statusDisplay = 'Pending Director';
+                %>
                 <tr>
                     <td><%= req.id %></td>
                     <td><%= req.staffName %></td>
-                    <td><%= req.department %></td>
-                    <td><%= req.requestDate %></td>
-                    <td><%= req.items.reduce((sum, item) => sum + Number(item.total || 0), 0).toFixed(2) %></td>
-                    <td><a href="/hod/approval/<%= req.id %>">Review</a></td>
-                </tr>
-                <% }) %>
+                    <td><%= req.department || 'N/A' %></td>
+                    <td><%= new Date(req.requestDate).toLocaleDateString() %></td>
+                    <td><strong>KES <%= total.toFixed(2) %></strong></td>
+                    <td><span style="background: #ff9800; color: white; padding: 3px 8px; border-radius: 3px; font-size: 12px;"><%= statusDisplay %></span></td>
+                   <td>
+                    <a href="/hod/approval/<%= req.id %>" class="btn-review">
+                        Review
+                    </a>
+                    </td>
+                         </tr>
+                <% }); %>
             </tbody>
         </table>
+    <% } else { %>
+        <div style="margin: 20px; padding: 20px; background: white; border-radius: 8px; text-align: center;">
+            <p>✅ No pending requisitions to review.</p>
+        </div>
     <% } %>
+    
+    <div class="links">
+        <a href="/home">📝 Create New Requisition</a> | 
+        <a href="/">🏠 Back to Home</a>
+    </div>
 </body>
 </html>

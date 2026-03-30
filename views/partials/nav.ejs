@@ -1,0 +1,13 @@
+<nav class="main-nav">
+    <a href="/" class="<%= currentPage === 'new' ? 'active' : '' %>">New Requisition</a>
+    <a href="/hod/dashboard" class="<%= currentPage === 'hod' ? 'active' : '' %>">HOD Dashboard</a>
+    <a href="/finance/dashboard" class="<%= currentPage === 'finance' ? 'active' : '' %>">Finance</a>
+    <a href="/director/dashboard" class="<%= currentPage === 'director' ? 'active' : '' %>">Director</a>
+    
+    <div style="margin-left: auto;">
+        <span style="color: #64748b; font-size: 0.8rem; margin-right: 10px;">
+            Hello, <%= user.username %>
+        </span>
+        <a href="/logout" style="color: #b91c1c;">Logout</a>
+    </div>
+</nav>

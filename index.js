@@ -1,378 +1,601 @@
-    const http = require('http');
-    const fs = require('fs');
-    var contentType = require('content-type');
-    var events = require('events');
-    var eventEmitter = new events.EventEmitter();
-    var formidable = require('formidable');
-
-
-    var express = require('express');
-    const app = express();
-    app.set('view engine', 'ejs');
-
-    app.use(express.static('public'));
-    app.use(express.urlencoded({ extended: true, limit: '50mb'}));
-    app.use(express.json({ limit: '50mb'}));
-
-    // In-memory data store for demo purposes
-    let requisitions = []
-
-
-    // app.post('/submit-requisition', (req, res = {
-    //     const newRequest = {
-    //         id: Date.now(),
-    //         data: req.body,
-    //         status: 'PENDING_HOD',
-    //         history: [{ stage: 'Prepared', date: new Date()}]
-    //     }
-    // }))
-
-
-    // Addition: Store new requisition from the form
-    app.post('/submit-requisition', (req, res) => {
-        const form = new formidable.IncomingForm({ multiples: true });
-
-        form.parse(req, (err, fields, files) => {
-            if (err) return res.status(500).send("Error processing form.");
-
-            // Ensure fields that may be single values become arrays for stable loop
-            const budgetLine = Array.isArray(fields.budgetLine) ? fields.budgetLine : [fields.budgetLine].filter(Boolean);
-            const description = Array.isArray(fields.description) ? fields.description : [fields.description].filter(Boolean);
-            const qty = Array.isArray(fields.qty) ? fields.qty : [fields.qty].filter(Boolean);
-            const unit = Array.isArray(fields.unit) ? fields.unit : [fields.unit].filter(Boolean);
-            const total = Array.isArray(fields.total) ? fields.total : [fields.total].filter(Boolean);
-
-            const items = [];
-            for (let i = 0; i < description.length; i++) {
-                items.push({
-                    budgetLine: budgetLine[i] || '',
-                    description: description[i] || '',
-                    qty: Number(qty[i] || 0),
-                    unit: Number(unit[i] || 0),
-                    total: Number(total[i] || 0)
-                });
-            }
-
-            const newRequisition = {
-                id: Date.now(),
-                staffName: fields.staffName || 'Anonymous',
-                requestDate: fields.requestDate || new Date().toISOString().slice(0, 10),
-                department: fields.department || 'Unknown',
-                items,
-                attachment: files.attachment ? (files.attachment.newFilename ? `/uploads/${files.attachment.newFilename}` : files.attachment.originalFilename) : null,
-                hodSignature: null,
-                financeSignature: null,
-                directorSignature: null,
-                status: 'PENDING_HOD',
-                history: [{ stage: 'Prepared', date: new Date() }]
-            };
-
-            requisitions.push(newRequisition);
-            console.log("Submission received from Staff side.");
-
-            res.redirect('/hod/dashboard');
-        });
-    });
-
-
-
-
-    //approval logic
-    // This is how your MongoDB Schema will look later
-    /*
-    const RequisitionSchema = new mongoose.Schema({
-        staffName: String,
-        department: String,
-        items: [{ description: String, qty: Number, unit: Number, total: Number }],
-        status: { type: String, default: 'PENDING_HOD' },
-        attachmentPath: String,
-        hodSignature: String, // Base64
-        financeSignature: String,
-        history: Array
-    });
-    */
-
-    app.post('/hod/submit-approval/:id', (req, res) => {
-        const { id } = req.params;
-        const { signature, action } = req.body;
-
-        // In-memory logic for now (swapping to MongoDB later)
-        let request = requisitions.find(r => r.id == id);
-        
-        if (request) {
-            if (action === 'approve') {
-                request.status = 'PENDING_FINANCE';
-                request.hodSignature = signature;
-                request.history.push({ stage: 'HOD_APPROVED', time: new Date() });
-            } else {
-                request.status = 'REJECTED';
-                request.history.push({ stage: 'REJECTED_BY_HOD', time: new Date() });
-            }
-            res.redirect('/hod/dashboard');
-        }
-    });
-
-
-
-    //finance approval status 
-    app.post('/finance/submit-approval/:id', (req, res) => {
-        const request = requisitions.find(r => r.id == req.params.id);
-        if (request) {
-            request.status = 'PENDING_DIRECTOR';
-            request.financeSignature = req.body.signature; // From the hidden input
-            request.history.push({ stage: 'FINANCE_AUTHORIZED', date: new Date() });
-            res.redirect('/finance/dashboard');
-        }
-    });
-
-
-
-
-    //routes for finance approvals
-    // Route to view all pending approvals for Finance
-    app.get('/finance/dashboard', (req, res) => {
-        // Later, this will be: const pending = await Requisition.find({ status: 'PENDING_FINANCE' });
-        const pendingRequests = requisitions.filter(r => r.status === 'PENDING_FINANCE');
-        res.render('finance_dashboard', { requests: pendingRequests });
-    });
-
-
-
-
-
-
-    // Route for the Director to see final pending requests
-    app.get('/director/dashboard', (req, res) => {
-        // Logic: Filter for 'PENDING_DIRECTOR' status
-        const pendingRequests = requisitions.filter(r => r.status === 'PENDING_DIRECTOR');
-        res.render('director_dashboard', { requests: pendingRequests });
-    });
-
-    // Direct routes for each view in the views folder (for quick testing)
-    app.get('/approve_form', (req, res) => {
-        const sample = { id: 0, staffName: 'Demo', department: 'IT', requestDate: (new Date()).toISOString().slice(0,10), items: [{ description: 'Demo item', qty: 1, unit: 10, total: 10 }], hodSignature: null };
-        res.render('approve_form', { requisition: sample });
-    });
-
-    app.get('/finance_approve', (req, res) => {
-        const sample = { id: 0, staffName: 'Demo', department: 'Finance', requestDate: (new Date()).toISOString().slice(0,10), items: [{ description: 'Demo item', qty: 1, unit: 10, total: 10 }], hodSignature: null, attachment: null };
-        res.render('finance_approve', { requisition: sample });
-    });
-
-    app.get('/director_approval', (req, res) => {
-        const sample = { id: 0, staffName: 'Demo', department: 'Director', requestDate: (new Date()).toISOString().slice(0,10), items: [{ description: 'Demo item', qty: 1, unit: 10, total: 10 }], hodSignature: null, financeSignature: null };
-        res.render('director_approval', { requisition: sample });
-    });
-
-
-    app.post('/director/submit-approval/:id', (req, res) => {
-        const { id } = req.params;
-        const { signature, action } = req.body;
-
-        let request = requisitions.find(r => r.id == id);
-        if (request) {
-            if (action === 'approve') {
-                request.status = 'APPROVED';
-                request.directorSignature = signature;
-                request.history.push({ stage: 'FINAL_APPROVAL', date: new Date() });
-                console.log(`Requisition ${id} is now fully Approved.`);
-            } else {
-                request.status = 'REJECTED_BY_DIRECTOR';
-                request.history.push({ stage: 'REJECTED', date: new Date() });
-            }
-            res.redirect('/director/dashboard');
-        }
-    });
-
-
-
-
-
-
-
-
-
-
-    var url = require('url');
-    var path = require('path');
-    var bodyParser = require('body-parser');
-    var cookieParser = require('cookie-parser');
-    var session = require('express-session');
-
-
-    const { createServer } = require('node:http');
-
-    const hostname = '127.0.0.1';
-    const port = 3000;
-
-
-
-    // const server = http.createServer((req, res) => {
-    //     res.statusCode = 200;
-    //     res.setHeader('Content-Type', 'text/html');
-    //  // res.end('Hello World');
-    // });
-    const server = http.createServer(app);
-
-    app.get('/', (req,res) => {
-        res.render('index');
-    });
-
-
-    // Route to view all pending approvals for HOD
-    app.get('/hod/dashboard', (req, res) => {
-        // Filter the in-memory array for requests waiting for HOD
-        const pendingRequests = requisitions.filter(r => r.status === 'PENDING_HOD');
-        
-        // Render the EJS file and pass the data
-        res.render('hod_dashboard', { requests: pendingRequests });
-    });
-
-
-    // app.get('/', (req,res) => {
-    //     res.render('index');
-    // });
-
-    // app.get('/', (req,res) => {
-    //     res.render('index');
-    // });
-
-    // app.get('/', (req,res) => {
-    //     res.render('index');
-    // });
-
-    var myEventHandler = function () {
-        console.log('Tuko on...');
-    }
-
-
-    //models for the db
-
-
-
-    const db = require('./config/db');
-
-    // // app.post('/submit-requisition', ... ) block removed to avoid duplicate route
-
-    // const form = new formidable.IncomingForm();
-
-    //     form.parse(req, async (err, fields, files) => {
-    //         try {
-    //             // 1. Insert the main Requisition
-    //             const [result] = await db.execute(
-    //                 'INSERT INTO requisitions (requestDate, department, staffName, attachmentPath) VALUES (?, ?, ?, ?)',
-    //                 [fields.requestDate, fields.department, 'Brian Wekesa', files.attachment[0].originalFilename]
-    //             );
-                
-    //             const newId = result.insertId;
-
-    //             // 2. Insert all items (assuming they come as arrays)
-    //             const itemQueries = fields.description.map((desc, i) => {
-    //                 return db.execute(
-    //                     'INSERT INTO requisition_items (requisition_id, description, qty, unitPrice, total) VALUES (?, ?, ?, ?, ?)',
-    //                     [newId, desc, fields.qty[i], fields.unit[i], fields.total[i]]
-    //                 );
-    //             });
-
-    //             await Promise.all(itemQueries);
-    //             res.send("Requisition saved to MySQL!");
-    //         } catch (error) {
-    //             console.error(error);
-    //             res.status(500).send("Database error occurred.");
-    //         }
-    //     });
-
-    // This wraps your logic so 'req' and 'res' are actually provided by Express
-    app.post('/submit-to-db', async (req, res) => {
-        const form = new formidable.IncomingForm();
-
-        form.parse(req, async (err, fields, files) => {
-            if (err) return res.status(500).send("Form parsing error");
-
+const express = require('express');
+const session = require('express-session');
+const bcrypt = require('bcrypt');
+const db = require('./config/db');
+const formidable = require('formidable');
+const path = require('path');
+const http = require('http');
+
+const app = express();
+const hostname = '127.0.0.1';
+const port = process.env.PORT || 3000;
+
+// Helper function to parse requisition data
+function parseRequisition(requisition) {
+    if (!requisition) return requisition;
+    
+    const parsed = { ...requisition };
+    
+    // Parse items
+    if (parsed.items) {
+        if (typeof parsed.items === 'string') {
             try {
-                // 1. Insert the main Requisition
-                const [result] = await db.execute(
-                    'INSERT INTO requisitions (requestDate, department, staffName, attachmentPath) VALUES (?, ?, ?, ?)',
-                    [fields.requestDate, fields.department, 'Brian Wekesa', files.attachment[0].originalFilename]
-                );
-                
-                const newId = result.insertId;
-
-                // 2. Insert all items
-                // Note: Added check to ensure fields.description is an array
-                const descriptions = Array.isArray(fields.description) ? fields.description : [fields.description];
-                
-                const itemQueries = descriptions.map((desc, i) => {
-                    return db.execute(
-                        'INSERT INTO requisition_items (requisition_id, description, qty, unitPrice, total) VALUES (?, ?, ?, ?, ?)',
-                        [newId, desc, fields.qty[i], fields.unit[i], fields.total[i]]
-                    );
-                });
-
-                await Promise.all(itemQueries);
-                res.send("Requisition saved to MySQL!");
-            } catch (error) {
-                console.error(error);
-                res.status(500).send("Database error occurred.");
+                parsed.items = JSON.parse(parsed.items);
+            } catch(e) {
+                parsed.items = [];
             }
-        });
-    });
-
-
-
-//database connection and data storage
-const db = require('./config/db'); // Import the connection we just made
-
-app.post('/submit-requisition', (req, res) => {
-    const form = new formidable.IncomingForm();
-
-    form.parse(req, async (err, fields, files) => {
-        if (err) return res.status(500).send("Error parsing form.");
-
-        try {
-            // 1. Save the main requisition record
-            const [mainResult] = await db.execute(
-                'INSERT INTO requisitions (staffName, requestDate, department, status) VALUES (?, ?, ?, ?)',
-                [fields.staffName, fields.requestDate, fields.department, 'PENDING_HOD']
-            );
-
-            const newRequisitionId = mainResult.insertId;
-
-            // 2. Save the individual items (looping through the arrays from the form)
-            const descriptions = Array.isArray(fields.description) ? fields.description : [fields.description];
-            
-            for (let i = 0; i < descriptions.length; i++) {
-                await db.execute(
-                    'INSERT INTO requisition_items (requisition_id, description, qty, unitPrice, total) VALUES (?, ?, ?, ?, ?)',
-                    [
-                        newRequisitionId, 
-                        descriptions[i], 
-                        fields.qty[i] || 0, 
-                        fields.unit[i] || 0, 
-                        fields.total[i] || 0
-                    ]
-                );
-            }
-
-            res.redirect('/hod/dashboard');
-        } catch (error) {
-            console.error("DB Error:", error);
-            res.status(500).send("Database saving failed.");
         }
+    } else {
+        parsed.items = [];
+    }
+    
+    // Parse history
+    if (parsed.history) {
+        if (typeof parsed.history === 'string') {
+            try {
+                parsed.history = JSON.parse(parsed.history);
+            } catch(e) {
+                parsed.history = [];
+            }
+        }
+    } else {
+        parsed.history = [];
+    }
+    
+    return parsed;
+}
+
+// 1. SETTINGS
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
+
+// 2. STANDARD MIDDLEWARE
+app.use(express.static('public'));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+app.use(express.json({ limit: '50mb' }));
+
+// 3. SESSION INITIALIZATION
+app.use(session({
+    secret: 'octagon_secret_key_2026',
+    resave: false,
+    saveUninitialized: false,
+    cookie: { 
+        maxAge: 3600000,
+        httpOnly: true,
+        secure: false
+    },
+    name: 'octagon_session'
+}));
+
+// 4. GLOBAL MIDDLEWARE
+app.use((req, res, next) => {
+    res.locals.user = (req.session && req.session.userId) ? 
+        { username: req.session.username, role: req.session.role } : null;
+    res.locals.currentPage = ''; 
+    res.locals.error = req.query.error || null;
+    res.locals.warning = req.query.warning || null;
+    res.locals.success = req.query.success || null;
+    next();
+});
+
+// 5. ACCESS CONTROL MIDDLEWARE
+const isAuthenticated = (req, res, next) => {
+    if (req.session && req.session.userId) {
+        return next();
+    }
+    req.session.returnTo = req.originalUrl;
+    res.redirect('/login');
+};
+
+const authorize = (role) => {
+    return (req, res, next) => {
+        if (req.session && req.session.role === role) {
+            return next();
+        }
+        res.status(403).send(`
+            <div style="text-align:center; margin-top:50px; font-family:sans-serif;">
+                <h1 style="color:#b91c1c;">Access Denied</h1>
+                <p>You do not have permission to view the ${role} dashboard.</p>
+                <p>Your role: ${req.session?.role || 'Not logged in'}</p>
+                <a href="/">Go Back to Home</a>
+            </div>
+        `);
+    };
+};
+
+function redirectToDashboard(role, res) {
+    switch(role) {
+        case 'hod':
+            return res.redirect('/hod/dashboard');
+        case 'finance':
+            return res.redirect('/finance/dashboard');
+        case 'director':
+            return res.redirect('/director/dashboard');
+        default:
+            return res.redirect('/home');
+    }
+}
+
+// 6. AUTHENTICATION ROUTES
+app.get('/login', (req, res) => {
+    if (req.session && req.session.userId) {
+        return redirectToDashboard(req.session.role, res);
+    }
+    res.render('login', { error: null });
+});
+
+app.post('/login', async (req, res) => {
+    const { username, password } = req.body;
+    
+    console.log('\n=================================');
+    console.log(`Login attempt for: ${username}`);
+    console.log('=================================');
+    
+    if (!username || !password) {
+        return res.render('login', { error: "Please enter both username and password" });
+    }
+    
+    try {
+        const [rows] = await db.execute('SELECT * FROM users WHERE username = ?', [username]);
+        const user = rows[0];
+        
+        if (!user) {
+            console.log('User not found');
+            return res.render('login', { error: "Invalid username or password" });
+        }
+        
+        console.log(`User found: ${user.username} (${user.role})`);
+        const passwordMatch = await bcrypt.compare(password, user.password_hash);
+        console.log(`Password match: ${passwordMatch}`);
+        
+        if (passwordMatch) {
+            req.session.userId = user.id;
+            req.session.role = user.role;
+            req.session.username = user.username;
+            console.log(`✅ Login successful for: ${username}`);
+            const returnTo = req.session.returnTo || '/';
+            delete req.session.returnTo;
+            return redirectToDashboard(user.role, res);
+        }
+        
+        console.log('❌ Invalid password');
+        res.render('login', { error: "Invalid username or password" });
+        
+    } catch (err) {
+        console.error('❌ Login error:', err);
+        res.render('login', { error: "A server error occurred. Please try again." });
+    }
+});
+
+app.get('/logout', (req, res) => {
+    req.session.destroy((err) => {
+        if (err) {
+            console.log("Logout error:", err);
+        }
+        res.clearCookie('octagon_session');
+        res.redirect('/login');
     });
 });
 
+// 7. ROOT ROUTE
+app.get('/', isAuthenticated, (req, res) => {
+    redirectToDashboard(req.session.role, res);
+});
 
+// 8. STAFF ROUTES
+app.get('/home', isAuthenticated, async (req, res) => {
+    try {
+        const [rows] = await db.execute(
+            'SELECT id, staffName, department, requestDate, status FROM requisitions ORDER BY requestDate DESC LIMIT 10'
+        );
+        res.render('index', { 
+            currentPage: 'new', 
+            user: req.session.username, 
+            requisitions: rows
+        });
+    } catch (error) {
+        console.error('Error loading home page:', error);
+        res.render('index', { 
+            currentPage: 'new', 
+            user: req.session.username, 
+            requisitions: [],
+            error: "Could not load requisitions"
+        });
+    }
+});
 
+app.post('/requisition/submit-to-hod', isAuthenticated, async (req, res) => {
+    try {
+        const { requestDate, department, grandTotal, staffName } = req.body;
+        
+        const descriptions = Array.isArray(req.body['description[]']) ? req.body['description[]'] : [req.body['description[]']];
+        const qtys = Array.isArray(req.body['qty[]']) ? req.body['qty[]'] : [req.body['qty[]']];
+        const units = Array.isArray(req.body['unit[]']) ? req.body['unit[]'] : [req.body['unit[]']];
+        const totals = Array.isArray(req.body['total[]']) ? req.body['total[]'] : [req.body['total[]']];
 
+        const items = descriptions.map((desc, i) => ({
+            description: desc,
+            qty: Number(qtys[i]) || 0,
+            unitPrice: Number(units[i]) || 0,
+            total: Number(totals[i]) || 0
+        }));
 
-    //Assign the event handler to an event:
-    eventEmitter.on('scream', myEventHandler);
+        const history = [{ 
+            stage: 'Prepared', 
+            date: new Date().toISOString(), 
+            user: req.session.username 
+        }];
 
-    //fire the 'scream' event:
-    eventEmitter.emit('scream');
+        const calculatedTotal = grandTotal || items.reduce((sum, item) => sum + item.total, 0);
 
+        await db.execute(
+            'INSERT INTO requisitions (staffName, requestDate, department, items, grandTotal, status, history) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            [staffName || req.session.username, requestDate || new Date(), department, JSON.stringify(items), calculatedTotal, 'PENDING_HOD', JSON.stringify(history)]
+        );
 
-    server.listen(port, hostname, () => {
-    console.log(`Server running at http://${hostname}:${port}/`);
-    });
+        res.redirect('/home?success=Requisition submitted successfully');
+        
+    } catch (error) {
+        console.error('Error saving requisition:', error);
+        res.status(500).send(`Error saving requisition: ${error.message}`);
+    }
+});
+
+// 9. HOD ROUTES
+app.get('/hod/dashboard', isAuthenticated, authorize('hod'), async (req, res) => {
+    try {
+        const [rows] = await db.execute(
+            'SELECT * FROM requisitions WHERE status = ? ORDER BY requestDate DESC',
+            ['PENDING_HOD']
+        );
+        
+        const parsedRequests = rows.map(req => {
+            const parsed = parseRequisition(req);
+            parsed.totalAmount = parsed.items.reduce((sum, item) => {
+                return sum + (Number(item.total) || Number(item.qty) * Number(item.unitPrice) || 0);
+            }, 0);
+            parsed.daysPending = Math.ceil((new Date() - new Date(parsed.requestDate)) / (1000 * 60 * 60 * 24));
+            return parsed;
+        });
+        
+        const totalPending = parsedRequests.length;
+        const highValueItems = parsedRequests.filter(r => r.totalAmount > 100000).length;
+        const urgentRequests = parsedRequests.filter(r => r.daysPending > 3).length;
+        
+        res.render('hod_dashboard', { 
+            requests: parsedRequests,
+            stats: {
+                total: totalPending,
+                highValue: highValueItems,
+                urgent: urgentRequests
+            },
+            currentPage: 'hod',
+            user: req.session.username,
+            role: 'hod'
+        });
+        
+    } catch (error) {
+        console.error('Error loading HOD dashboard:', error);
+        res.render('hod_dashboard', { 
+            requests: [], 
+            stats: { total: 0, highValue: 0, urgent: 0 },
+            currentPage: 'hod',
+            user: req.session.username,
+            error: "Could not load requisitions: " + error.message
+        });
+    }
+});
+
+app.get('/hod/approval/:id', isAuthenticated, authorize('hod'), async (req, res) => {
+    try {
+        const [rows] = await db.execute('SELECT * FROM requisitions WHERE id = ?', [req.params.id]);
+        
+        if (!rows || rows.length === 0) {
+            return res.status(404).send("Requisition not found");
+        }
+        
+        const requisition = parseRequisition(rows[0]);
+        
+        if (requisition.status !== 'PENDING_HOD') {
+            return res.status(400).send(`
+                <div style="text-align:center; margin-top:50px;">
+                    <h2>Requisition Already Processed</h2>
+                    <p>Status: ${requisition.status}</p>
+                    <a href="/hod/dashboard">Back to Dashboard</a>
+                </div>
+            `);
+        }
+        
+        const subtotal = requisition.items.reduce((sum, item) => {
+            return sum + (Number(item.total) || Number(item.qty) * Number(item.unitPrice) || 0);
+        }, 0);
+        
+        res.render('approve_form', {
+            requisition: {
+                ...requisition,
+                subtotal: subtotal,
+                grandTotal: subtotal,
+                history: requisition.history || []
+            },
+            currentPage: 'hod',
+            user: req.session.username,
+            role: 'hod'
+        });
+        
+    } catch (error) {
+        console.error('Error loading approval form:', error);
+        res.status(500).send(`Error loading requisition: ${error.message}`);
+    }
+});
+
+app.post('/hod/submit-approval/:id', isAuthenticated, authorize('hod'), async (req, res) => {
+    const { id } = req.params;
+    const { action, comments, signature } = req.body;
+    
+    console.log('Processing HOD approval:', { id, action });
+    
+    if (!action || !['approve', 'reject'].includes(action)) {
+        return res.status(400).send("Invalid action. Must be 'approve' or 'reject'.");
+    }
+    
+    if (!signature) {
+        return res.status(400).send("Signature is required.");
+    }
+    
+    try {
+        const [rows] = await db.execute('SELECT * FROM requisitions WHERE id = ?', [id]);
+        
+        if (rows.length === 0) {
+            return res.status(404).send("Requisition not found");
+        }
+        
+        const requisition = rows[0];
+        
+        if (requisition.status !== 'PENDING_HOD') {
+            return res.status(400).send(`Requisition already processed. Current status: ${requisition.status}`);
+        }
+        
+        let history = [];
+        if (requisition.history) {
+            try {
+                history = typeof requisition.history === 'string' ? 
+                    JSON.parse(requisition.history) : 
+                    (requisition.history || []);
+            } catch(e) {
+                history = [];
+            }
+        }
+        
+        const newStatus = action === 'approve' ? 'PENDING_FINANCE' : 'REJECTED_BY_HOD';
+        
+        const historyEntry = {
+            stage: 'HOD Approval',
+            action: action === 'approve' ? 'Approved' : 'Rejected',
+            date: new Date().toISOString(),
+            user: req.session.username,
+            signature: signature.substring(0, 100),
+            timestamp: Date.now()
+        };
+        
+        if (comments) {
+            historyEntry.comments = comments;
+        }
+        
+        history.push(historyEntry);
+        
+        const updateQuery = 'UPDATE requisitions SET status = ?, hodSignature = ?, history = ? WHERE id = ?';
+        const updateValues = [newStatus, signature, JSON.stringify(history), id];
+        
+        await db.execute(updateQuery, updateValues);
+        
+        console.log(`✅ HOD ${action}d requisition ${id}`);
+        
+        const message = action === 'approve' 
+            ? '✅ Requisition approved and sent to Finance' 
+            : '❌ Requisition rejected';
+        
+        res.redirect(`/hod/dashboard?success=${encodeURIComponent(message)}`);
+        
+    } catch (error) {
+        console.error('❌ Error processing HOD approval:', error);
+        res.status(500).send(`Error processing approval: ${error.message}`);
+    }
+});
+
+// 10. FINANCE ROUTES
+app.get('/finance/dashboard', isAuthenticated, authorize('finance'), async (req, res) => {
+    try {
+        const [rows] = await db.execute(
+            'SELECT * FROM requisitions WHERE status = ? ORDER BY requestDate DESC',
+            ['PENDING_FINANCE']
+        );
+        res.render('finance_dashboard', { 
+            requests: rows, 
+            currentPage: 'finance',
+            user: req.session.username
+        });
+    } catch (error) {
+        console.error('Error loading finance dashboard:', error);
+        res.render('finance_dashboard', { 
+            requests: [], 
+            currentPage: 'finance',
+            user: req.session.username,
+            error: "Could not load requisitions"
+        });
+    }
+});
+
+app.get('/finance/approval/:id', isAuthenticated, authorize('finance'), async (req, res) => {
+    try {
+        const [rows] = await db.execute('SELECT * FROM requisitions WHERE id = ?', [req.params.id]);
+        if (!rows[0]) return res.status(404).send("Requisition not found");
+        
+        const reqData = parseRequisition(rows[0]);
+        
+        res.render('approve_form', { 
+            requisition: reqData, 
+            currentPage: 'finance',
+            user: req.session.username,
+            role: 'finance'
+        });
+    } catch (error) {
+        console.error('Error loading finance approval:', error);
+        res.status(500).send(`Error loading requisition: ${error.message}`);
+    }
+});
+
+app.post('/finance/submit-approval/:id', isAuthenticated, authorize('finance'), async (req, res) => {
+    const { id } = req.params;
+    const { signature, action, comments } = req.body;
+    const newStatus = action === 'approve' ? 'PENDING_DIRECTOR' : 'REJECTED_BY_FINANCE';
+    
+    try {
+        const [rows] = await db.execute('SELECT * FROM requisitions WHERE id = ?', [id]);
+        if (rows.length === 0) return res.status(404).send("Requisition not found");
+        
+        let history = [];
+        try {
+            history = typeof rows[0].history === 'string' ? JSON.parse(rows[0].history || '[]') : rows[0].history || [];
+        } catch(e) {
+            history = [];
+        }
+        
+        history.push({
+            stage: action === 'approve' ? 'Approved by Finance' : 'Rejected by Finance',
+            date: new Date().toISOString(),
+            user: req.session.username,
+            comments: comments || '',
+            signature: signature || ''
+        });
+        
+        await db.execute(
+            'UPDATE requisitions SET status = ?, financeSignature = ?, history = ? WHERE id = ?',
+            [newStatus, signature || 'approved', JSON.stringify(history), id]
+        );
+        
+        res.redirect('/finance/dashboard?success=Finance approval submitted');
+    } catch (error) {
+        console.error('Error processing finance approval:', error);
+        res.status(500).send(`Error processing approval: ${error.message}`);
+    }
+});
+
+// 11. DIRECTOR ROUTES
+app.get('/director/dashboard', isAuthenticated, authorize('director'), async (req, res) => {
+    try {
+        const [rows] = await db.execute(
+            'SELECT * FROM requisitions WHERE status = ? ORDER BY requestDate DESC',
+            ['PENDING_DIRECTOR']
+        );
+        res.render('director_dashboard', { 
+            requests: rows, 
+            currentPage: 'director',
+            user: req.session.username
+        });
+    } catch (error) {
+        console.error('Error loading director dashboard:', error);
+        res.render('director_dashboard', { 
+            requests: [], 
+            currentPage: 'director',
+            user: req.session.username,
+            error: "Could not load requisitions"
+        });
+    }
+});
+
+app.get('/director/approval/:id', isAuthenticated, authorize('director'), async (req, res) => {
+    try {
+        const [rows] = await db.execute('SELECT * FROM requisitions WHERE id = ?', [req.params.id]);
+        if (!rows[0]) return res.status(404).send("Requisition not found");
+        
+        const reqData = parseRequisition(rows[0]);
+        
+        res.render('approve_form', { 
+            requisition: reqData, 
+            currentPage: 'director',
+            user: req.session.username,
+            role: 'director'
+        });
+    } catch (error) {
+        console.error('Error loading director approval:', error);
+        res.status(500).send(`Error loading requisition: ${error.message}`);
+    }
+});
+
+app.post('/director/submit-approval/:id', isAuthenticated, authorize('director'), async (req, res) => {
+    const { id } = req.params;
+    const { signature, action, comments } = req.body;
+    const newStatus = action === 'approve' ? 'APPROVED' : 'REJECTED_BY_DIRECTOR';
+    
+    try {
+        const [rows] = await db.execute('SELECT * FROM requisitions WHERE id = ?', [id]);
+        if (rows.length === 0) return res.status(404).send("Requisition not found");
+        
+        let history = [];
+        try {
+            history = typeof rows[0].history === 'string' ? JSON.parse(rows[0].history || '[]') : rows[0].history || [];
+        } catch(e) {
+            history = [];
+        }
+        
+        history.push({
+            stage: action === 'approve' ? 'Approved by Director' : 'Rejected by Director',
+            date: new Date().toISOString(),
+            user: req.session.username,
+            comments: comments || '',
+            signature: signature || ''
+        });
+        
+        await db.execute(
+            'UPDATE requisitions SET status = ?, directorSignature = ?, history = ? WHERE id = ?',
+            [newStatus, signature || 'approved', JSON.stringify(history), id]
+        );
+        
+        res.redirect('/director/dashboard?success=Final approval submitted');
+    } catch (error) {
+        console.error('Error processing director approval:', error);
+        res.status(500).send(`Error processing approval: ${error.message}`);
+    }
+});
+
+// 12. ERROR HANDLING
+app.use((req, res) => {
+    res.status(404).send(`
+        <div style="text-align:center; margin-top:50px; font-family:sans-serif;">
+            <h1>404 - Page Not Found</h1>
+            <p>The page you're looking for doesn't exist.</p>
+            <a href="/">Go Home</a>
+        </div>
+    `);
+});
+
+// 13. SERVER START
+const server = http.createServer(app);
+
+server.on('error', (err) => {
+    if (err.code === 'EADDRINUSE') {
+        console.error(`\n❌ Port ${port} is already in use!`);
+        console.error('\nSolutions:');
+        console.error('1. Kill existing Node processes:');
+        console.error('   Stop-Process -Name node -Force');
+        console.error('\n2. Use a different port:');
+        console.error('   $env:PORT=3001; node index.js');
+        process.exit(1);
+    } else {
+        console.error('Server error:', err);
+    }
+});
+
+server.listen(port, hostname, () => {
+    console.log(`\n✅ Octagon Portal Active: http://${hostname}:${port}/`);
+    console.log('\n🔐 Login credentials:');
+    console.log('   Username: hod, finance, director, staff, brian');
+    console.log('   Password: password123');
+    console.log('\n📋 Available routes:');
+    console.log('   /login - Login page');
+    console.log('   /home - Staff requisition form');
+    console.log('   /hod/dashboard - HOD dashboard');
+    console.log('   /finance/dashboard - Finance dashboard');
+    console.log('   /director/dashboard - Director dashboard');
+    console.log('\n');
+});
