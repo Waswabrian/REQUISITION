@@ -1,19 +1,178 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>HOD Approval - Requisition <%= requisition.id %></title>
-    <link rel="stylesheet" href="/styles/approve_form.css">
+    <title><%= role === 'hod' ? 'HOD' : (role === 'finance' ? 'Finance' : 'Director') %> Approval - Requisition <%= requisition.id %></title>
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
+    <link rel="stylesheet" href="/styles/approve_form.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+        }
+        .top {
+            background: #0071bc;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        #logo {
+            height: 50px;
+        }
+        .top h2, .top h3 {
+            margin: 0;
+            color: white;
+        }
+        nav.main-nav {
+            background: #333;
+            padding: 10px 20px;
+            display: flex;
+            gap: 20px;
+        }
+        nav.main-nav a {
+            color: white;
+            text-decoration: none;
+            padding: 5px 10px;
+        }
+        nav.main-nav a:hover {
+            background: #555;
+            border-radius: 3px;
+        }
+        .summary-box {
+            background: white;
+            margin: 20px;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .summary-box p {
+            margin: 10px 0;
+        }
+        table {
+            width: calc(100% - 40px);
+            margin: 20px;
+            border-collapse: collapse;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background: #f5f5f5;
+            font-weight: bold;
+        }
+        .approval-container {
+            background: white;
+            margin: 20px;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        #signature-pad {
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            width: 100%;
+            max-width: 400px;
+            height: 200px;
+            background: white;
+        }
+        .btn {
+            padding: 10px 20px;
+            margin: 10px 10px 0 0;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .btn-approve {
+            background: #4caf50;
+            color: white;
+        }
+        .btn-approve:hover {
+            background: #45a049;
+        }
+        .btn-reject {
+            background: #f44336;
+            color: white;
+        }
+        .btn-reject:hover {
+            background: #da190b;
+        }
+        .btn-clear {
+            background: #ff9800;
+            color: white;
+        }
+        .btn-clear:hover {
+            background: #e68900;
+        }
+        .btn-back {
+            background: #666;
+            color: white;
+            text-decoration: none;
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 4px;
+        }
+        .btn-back:hover {
+            background: #555;
+        }
+        .form-group {
+            margin: 15px 0;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"], textarea, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        .alert {
+            padding: 15px;
+            margin: 20px;
+            border-radius: 4px;
+        }
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .button-group {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+    </style>
 </head>
 <body>
     <div class="top">
-        <img src="/Images/octagon-logo.png" id="logo">
-        <h2>HOD APPROVAL INTERFACE</h2>
+        <img src="/Images/octagon-logo.png" id="logo" alt="Octagon Logo">
+        <h2><%= role === 'hod' ? 'HOD' : (role === 'finance' ? 'FINANCE' : 'DIRECTOR') %> APPROVAL INTERFACE</h2>
     </div>
 
-    <!-- <%- include('partials/nav') %> -->
     <nav class="main-nav">
-        <a href="/">New Requisition</a>
+        <a href="/home">New Requisition</a>
         <a href="/hod/dashboard">HOD Dashboard</a>
         <a href="/finance/dashboard">Finance Dashboard</a>
         <a href="/director/dashboard">Director Dashboard</a>
@@ -23,81 +182,185 @@
         <p><strong>Requisition ID:</strong> <%= requisition.id %></p>
         <p><strong>Staff:</strong> <%= requisition.staffName || 'Unknown' %></p>
         <p><strong>Department:</strong> <%= requisition.department || 'N/A' %></p>
-        <p><strong>Date:</strong> <%= requisition.requestDate || 'N/A' %></p>
-        <p><strong>Grand Total:</strong> KES <% 
-                         let grandTotal = requisition.grandTotal;
-                         if (!grandTotal && grandTotal !== 0) {
-                         grandTotal = (requisition.items || []).reduce((acc, i) => acc + Number(i.total || 0), 0);
-                                 }
-            // Ensure it's a number
-                        grandTotal = Number(grandTotal) || 0;
-                        %><%= grandTotal.toFixed(2) %></p>  
-         <!-- <p><strong>Grand Total:</strong> KES <%= (requisition.grandTotal || (requisition.items || []).reduce((acc, i) => acc + Number(i.total || 0), 0)).toFixed(2) %></p> -->
-        <p><a href="/hod/dashboard" style="color: #fff; background: #0071bc; padding: 7px 12px; text-decoration: none; border-radius: 4px;">Back to Dashboard</a></p>
+        <p><strong>Date:</strong> <%= requisition.requestDate ? new Date(requisition.requestDate).toLocaleDateString() : 'N/A' %></p>
+        <p><strong>Grand Total:</strong> KES 
+            <% 
+                // SAFE GRAND TOTAL CALCULATION
+                let totalAmount = 0;
+                
+                // Try to get from grandTotal first
+                if (requisition.grandTotal && !isNaN(parseFloat(requisition.grandTotal))) {
+                    totalAmount = parseFloat(requisition.grandTotal);
+                } 
+                // Otherwise try to calculate from items
+                else if (requisition.items) {
+                    try {
+                        let itemsArray = requisition.items;
+                        if (typeof requisition.items === 'string') {
+                            itemsArray = JSON.parse(requisition.items);
+                        }
+                        if (Array.isArray(itemsArray)) {
+                            totalAmount = itemsArray.reduce((sum, item) => {
+                                return sum + (parseFloat(item.total) || parseFloat(item.qty) * parseFloat(item.unitPrice) || 0);
+                            }, 0);
+                        }
+                    } catch(e) {
+                        console.error('Error calculating total:', e);
+                        totalAmount = 0;
+                    }
+                }
+                
+                // Ensure it's a valid number
+                totalAmount = isNaN(totalAmount) ? 0 : totalAmount;
+            %>
+            <%= totalAmount.toFixed(2) %>
+        </p>  
+        <p>
+            <a href="/<%= role %>/dashboard" class="btn-back">← Back to Dashboard</a>
+        </p>
     </div>
 
-    <table id="table2">
-        <tr style="font-weight: bold;">
-            <td>Item Description</td>
-            <td>Quantity</td>
-            <td>Unit</td>
-            <td>Total</td>
-        </tr>
-        <% requisition.items.forEach(item => { %>
-        <tr>
-            <td><%= item.description %></td>
-            <td><%= item.qty %></td>
-            <td><%= item.unit %></td>
-            <td><%= item.total %></td>
-        </tr>
-        <% }) %>
+    <table>
+        <thead>
+            <tr style="font-weight: bold; background: #f5f5f5;">
+                <th>Item Description</th>
+                <th>Quantity</th>
+                <th>Unit Price (KES)</th>
+                <th>Total (KES)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% 
+            let itemsArray = [];
+            if (requisition.items) {
+                if (Array.isArray(requisition.items)) {
+                    itemsArray = requisition.items;
+                } else if (typeof requisition.items === 'string') {
+                    try {
+                        itemsArray = JSON.parse(requisition.items);
+                    } catch(e) {
+                        console.error('Error parsing items:', e);
+                        itemsArray = [];
+                    }
+                }
+            }
+            
+            if (itemsArray.length > 0) {
+                itemsArray.forEach(function(item) { 
+                    const qty = parseFloat(item.qty) || 0;
+                    const unitPrice = parseFloat(item.unitPrice) || 0;
+                    const itemTotal = parseFloat(item.total) || (qty * unitPrice);
+            %>
+            <tr>
+                <td><%= item.description || 'N/A' %></td>
+                <td><%= qty %></td>
+                <td>KES <%= unitPrice.toFixed(2) %></td>
+                <td>KES <%= itemTotal.toFixed(2) %></td>
+            </tr>
+            <% }); } else { %>
+            <tr>
+                <td colspan="4" style="text-align: center;">No items found</td>
+            </tr>
+            <% } %>
+        </tbody>
     </table>
 
-    <form id="approvalForm" action="/hod/submit-approval/<%= requisition.id %>" method="POST">
+    <form id="approvalForm" action="/<%= role %>/submit-approval/<%= requisition.id %>" method="POST">
         <div class="approval-container">
-            <h3>HOD/Supervisor Action</h3>
-            <canvas id="signature-pad" style="border: 1px solid #000; width: 400px; height: 200px;"></canvas>
+            <h3><%= role === 'hod' ? 'HOD' : (role === 'finance' ? 'Finance' : 'Director') %> Decision</h3>
+            <p>Please sign below to approve or reject this requisition:</p>
+            <canvas id="signature-pad" style="border: 2px solid #ddd; border-radius: 4px; width: 100%; max-width: 400px; height: 200px; background: white;"></canvas>
             <input type="hidden" name="signature" id="signature-db">
+            <input type="hidden" name="action" id="action-input">
             
-            <div style="margin-top: 20px;">
-                <button type="submit" name="action" value="approve" style="background: green; color: white;">Approve to Finance</button>
-                <button type="submit" name="action" value="reject" style="background: red; color: white;">Reject Request</button>
+            <div class="button-group">
+                <button type="button" id="clear-btn" class="btn btn-clear">Clear Signature</button>
+                <button type="submit" id="approve-btn" class="btn btn-approve">✓ Approve</button>
+                <button type="submit" id="reject-btn" class="btn btn-reject">✗ Reject</button>
+            </div>
+            
+            <div class="form-group">
+                <label for="comments">Comments (Optional):</label>
+                <textarea name="comments" id="comments" rows="3" placeholder="Add any comments or reasons for your decision..."></textarea>
             </div>
         </div>
     </form>
-<script>
-    const canvas = document.getElementById('signature-pad');
-    const signaturePad = new SignaturePad(canvas, {
-        backgroundColor: 'rgb(255, 255, 255)' // Ensures a clean white background
-    });
 
-    // Adjust canvas resolution for high-DPI screens
-    function resizeCanvas() {
-        const ratio = Math.max(window.devicePixelRatio || 1, 1);
-        canvas.width = canvas.offsetWidth * ratio;
-        canvas.height = canvas.offsetHeight * ratio;
-        canvas.getContext("2d").scale(ratio, ratio);
-        signaturePad.clear(); // otherwise scale() clears the canvas
-    }
+    <script>
+        // Initialize signature pad
+        const canvas = document.getElementById('signature-pad');
+        const signaturePad = new SignaturePad(canvas, {
+            backgroundColor: 'rgb(255, 255, 255)',
+            penColor: 'rgb(0, 0, 0)',
+            minWidth: 1,
+            maxWidth: 2
+        });
 
-    window.onresize = resizeCanvas;
-    resizeCanvas();
+        // Adjust canvas resolution for high-DPI screens
+        function resizeCanvas() {
+            const ratio = Math.max(window.devicePixelRatio || 1, 1);
+            canvas.width = canvas.offsetWidth * ratio;
+            canvas.height = canvas.offsetHeight * ratio;
+            canvas.getContext("2d").scale(ratio, ratio);
+            signaturePad.clear();
+        }
 
-    const form = document.getElementById('approvalForm');
-    form.onsubmit = function(e) {
-        if (signaturePad.isEmpty()) {
-            alert("Please provide a signature before submitting.");
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        // Clear button functionality
+        const clearBtn = document.getElementById('clear-btn');
+        if (clearBtn) {
+            clearBtn.addEventListener('click', function() {
+                signaturePad.clear();
+            });
+        }
+
+        // Handle form submission with different actions
+        const form = document.getElementById('approvalForm');
+        const approveBtn = document.getElementById('approve-btn');
+        const rejectBtn = document.getElementById('reject-btn');
+        const actionInput = document.getElementById('action-input');
+
+        function submitForm(action) {
+            // Check if signature is provided
+            if (signaturePad.isEmpty()) {
+                alert('Please provide your signature before submitting.');
+                return false;
+            }
+            
+            // Convert signature to Base64
+            const signatureDataURL = signaturePad.toDataURL('image/png');
+            document.getElementById('signature-db').value = signatureDataURL;
+            
+            // Set the action
+            actionInput.value = action;
+            
+            // Confirm action
+            const confirmMessage = action === 'approve' 
+                ? 'Are you sure you want to APPROVE this requisition?' 
+                : 'Are you sure you want to REJECT this requisition? This action cannot be undone.';
+            
+            if (confirm(confirmMessage)) {
+                form.submit();
+            }
+            
             return false;
         }
-        
-        // Convert the signature to a Base64 string
-        const dataURL = signaturePad.toDataURL('image/png');
-        document.getElementById('signature-db').value = dataURL;
-        return true;
-    };
 
-    // Optional: Add a button in your HTML with id="clear-btn" to use this:
-    // document.getElementById('clear-btn').addEventListener('click', () => signaturePad.clear());
-</script>>
+        if (approveBtn) {
+            approveBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                submitForm('approve');
+            });
+        }
+
+        if (rejectBtn) {
+            rejectBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                submitForm('reject');
+            });
+        }
+    </script>
 </body>
 </html>

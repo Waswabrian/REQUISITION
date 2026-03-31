@@ -403,27 +403,119 @@ app.post('/hod/submit-approval/:id', isAuthenticated, authorize('hod'), async (r
 });
 
 // 10. FINANCE ROUTES
+// app.get('/finance/dashboard', isAuthenticated, authorize('finance'), async (req, res) => {
+//     try {
+//         const [rows] = await db.execute(
+//             'SELECT * FROM requisitions WHERE status = ? OR status = ? ORDER BY requestDate DESC',
+//             ['PENDING_FINANCE', 'APPROVED'] // Adjust statuses as needed
+//         );
+//         res.render('finance_dashboard', { 
+//             requests: rows, 
+//             user: req.session.username 
+//         });
+//     } catch (error) {
+//         res.render('finance_dashboard', { requests: [], user: req.session.username });
+//     }
+// });
+
+// // 10. FINANCE ROUTES - FIXED with stats
+// app.get('/finance/dashboard', isAuthenticated, authorize('finance'), async (req, res) => {
+//     try {
+//         const [rows] = await db.execute(
+//             'SELECT * FROM requisitions WHERE status = ? ORDER BY requestDate DESC',
+//             ['PENDING_FINANCE']
+//         );
+        
+//         // Parse each requisition
+//         const parsedRequests = rows.map(req => {
+//             const parsed = parseRequisition(req);
+//             parsed.totalAmount = parsed.items.reduce((sum, item) => {
+//                 return sum + (Number(item.total) || Number(item.qty) * Number(item.unitPrice) || 0);
+//             }, 0);
+//             return parsed;
+//         });
+        
+//         // Calculate stats
+//         const stats = {
+//             total: parsedRequests.length,
+//             highValue: parsedRequests.filter(r => r.totalAmount > 100000).length
+//         };
+        
+//         res.render('finance_dashboard', { 
+//             requisitions: parsedRequests,
+//             stats: stats,  // Added stats object
+//             currentPage: 'finance',
+//             user: req.session.username
+//         });
+//     } catch (error) {
+//         console.error('Error loading finance dashboard:', error);
+//         res.render('finance_dashboard', { 
+//             requisitions: [],
+//             stats: { total: 0, highValue: 0 },  // Added default stats
+//             currentPage: 'finance',
+//             user: req.session.username,
+//             error: "Could not load requisitions"
+//         });
+//     }
+// });
+
+
+// Finance Dashboard Route - FIXED
 app.get('/finance/dashboard', isAuthenticated, authorize('finance'), async (req, res) => {
     try {
         const [rows] = await db.execute(
             'SELECT * FROM requisitions WHERE status = ? ORDER BY requestDate DESC',
             ['PENDING_FINANCE']
         );
+        
+        // Parse each requisition and format the signature
+        const parsedRequests = rows.map(req => {
+            const parsed = parseRequisition(req);
+            parsed.totalAmount = parsed.items.reduce((sum, item) => {
+                return sum + (Number(item.total) || Number(item.qty) * Number(item.unitPrice) || 0);
+            }, 0);
+            
+            // Format the HOD signature status (don't display the image data)
+            if (req.hodSignature) {
+                // If it's a base64 image string, show "Approved" instead
+                if (req.hodSignature.startsWith('data:image')) {
+                    parsed.hodStatus = '✓ Approved by HOD';
+                } else {
+                    parsed.hodStatus = req.hodSignature === 'approved' ? '✓ Approved by HOD' : 'Rejected by HOD';
+                }
+            } else {
+                parsed.hodStatus = 'Pending HOD';
+            }
+            
+            return parsed;
+        });
+        
+        const stats = {
+            total: parsedRequests.length,
+            highValue: parsedRequests.filter(r => r.totalAmount > 100000).length
+        };
+        
         res.render('finance_dashboard', { 
-            requests: rows, 
+            requisitions: parsedRequests,
+            stats: stats,
             currentPage: 'finance',
             user: req.session.username
         });
     } catch (error) {
         console.error('Error loading finance dashboard:', error);
         res.render('finance_dashboard', { 
-            requests: [], 
+            requisitions: [],
+            stats: { total: 0, highValue: 0 },
             currentPage: 'finance',
             user: req.session.username,
             error: "Could not load requisitions"
         });
     }
 });
+
+
+
+
 
 app.get('/finance/approval/:id', isAuthenticated, authorize('finance'), async (req, res) => {
     try {
@@ -481,21 +573,106 @@ app.post('/finance/submit-approval/:id', isAuthenticated, authorize('finance'), 
 });
 
 // 11. DIRECTOR ROUTES
+
+
+// app.get('/director/dashboard', isAuthenticated, authorize('director'), async (req, res) => {
+//     try {
+//         const [rows] = await db.execute(
+//             'SELECT * FROM requisitions WHERE status = ? ORDER BY requestDate DESC',
+//             ['PENDING_DIRECTOR']
+//         );
+//         res.render('director_dashboard', { 
+//             requests: rows, 
+//             currentPage: 'director',
+//             user: req.session.username
+//         });
+//     } catch (error) {
+//         console.error('Error loading director dashboard:', error);
+//         res.render('director_dashboard', { 
+//             requests: [], 
+//             currentPage: 'director',
+//             user: req.session.username,
+//             error: "Could not load requisitions"
+//         });
+//     }
+// });
+
+
+// // 11. DIRECTOR ROUTES - FIXED with stats
+// app.get('/director/dashboard', isAuthenticated, authorize('director'), async (req, res) => {
+//     try {
+//         const [rows] = await db.execute(
+//             'SELECT * FROM requisitions WHERE status = ? ORDER BY requestDate DESC',
+//             ['PENDING_DIRECTOR']
+//         );
+        
+//         // Parse each requisition
+//         const parsedRequests = rows.map(req => {
+//             const parsed = parseRequisition(req);
+//             parsed.totalAmount = parsed.items.reduce((sum, item) => {
+//                 return sum + (Number(item.total) || Number(item.qty) * Number(item.unitPrice) || 0);
+//             }, 0);
+//             return parsed;
+//         });
+        
+//         // Calculate stats
+//         const stats = {
+//             total: parsedRequests.length,
+//             highValue: parsedRequests.filter(r => r.totalAmount > 100000).length
+//         };
+        
+//         res.render('director_dashboard', { 
+//             requisitions: parsedRequests,
+//             stats: stats,  // Added stats object
+//             currentPage: 'director',
+//             user: req.session.username
+//         });
+//     } catch (error) {
+//         console.error('Error loading director dashboard:', error);
+//         res.render('director_dashboard', { 
+//             requisitions: [],
+//             stats: { total: 0, highValue: 0 },  // Added default stats
+//             currentPage: 'director',
+//             user: req.session.username,
+//             error: "Could not load requisitions"
+//         });
+//     }
+// });
+
+
+// Director Dashboard Route
 app.get('/director/dashboard', isAuthenticated, authorize('director'), async (req, res) => {
     try {
         const [rows] = await db.execute(
             'SELECT * FROM requisitions WHERE status = ? ORDER BY requestDate DESC',
             ['PENDING_DIRECTOR']
         );
+        
+        // Parse each requisition
+        const parsedRequests = rows.map(req => {
+            const parsed = parseRequisition(req);
+            parsed.totalAmount = parsed.items.reduce((sum, item) => {
+                return sum + (Number(item.total) || Number(item.qty) * Number(item.unitPrice) || 0);
+            }, 0);
+            return parsed;
+        });
+        
+        const stats = {
+            total: parsedRequests.length,
+            highValue: parsedRequests.filter(r => r.totalAmount > 100000).length
+        };
+        
         res.render('director_dashboard', { 
-            requests: rows, 
+            requisitions: parsedRequests,  // MUST be 'requisitions'
+            stats: stats,
             currentPage: 'director',
             user: req.session.username
         });
     } catch (error) {
         console.error('Error loading director dashboard:', error);
         res.render('director_dashboard', { 
-            requests: [], 
+            requisitions: [],  // MUST be 'requisitions'
+            stats: { total: 0, highValue: 0 },
             currentPage: 'director',
             user: req.session.username,
             error: "Could not load requisitions"
@@ -503,24 +680,51 @@ app.get('/director/dashboard', isAuthenticated, authorize('director'), async (re
     }
 });
 
+
+
+// Director Approval Form
 app.get('/director/approval/:id', isAuthenticated, authorize('director'), async (req, res) => {
     try {
         const [rows] = await db.execute('SELECT * FROM requisitions WHERE id = ?', [req.params.id]);
         if (!rows[0]) return res.status(404).send("Requisition not found");
         
-        const reqData = parseRequisition(rows[0]);
+        const requisition = parseRequisition(rows[0]);
         
-        res.render('approve_form', { 
-            requisition: reqData, 
+        if (requisition.status !== 'PENDING_DIRECTOR') {
+            return res.status(400).send(`
+                <div style="text-align:center; margin-top:50px;">
+                    <h2>Requisition Already Processed</h2>
+                    <p>Status: ${requisition.status}</p>
+                    <a href="/director/dashboard">Back to Dashboard</a>
+                </div>
+            `);
+        }
+        
+        const subtotal = requisition.items.reduce((sum, item) => {
+            return sum + (Number(item.total) || Number(item.qty) * Number(item.unitPrice) || 0);
+        }, 0);
+        
+        res.render('approve_form', {
+            requisition: {
+                ...requisition,
+                subtotal: subtotal,
+                grandTotal: subtotal,
+                history: requisition.history || []
+            },
             currentPage: 'director',
             user: req.session.username,
             role: 'director'
         });
+        
     } catch (error) {
         console.error('Error loading director approval:', error);
         res.status(500).send(`Error loading requisition: ${error.message}`);
     }
 });
+
+
+
+
 
 app.post('/director/submit-approval/:id', isAuthenticated, authorize('director'), async (req, res) => {
     const { id } = req.params;

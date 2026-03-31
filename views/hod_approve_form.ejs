@@ -32,7 +32,7 @@
             // Ensure it's a number
                         grandTotal = Number(grandTotal) || 0;
                         %><%= grandTotal.toFixed(2) %></p>  
-         <!-- <p><strong>Grand Total:</strong> KES <%= (requisition.grandTotal || (requisition.items || []).reduce((acc, i) => acc + Number(i.total || 0), 0)).toFixed(2) %></p> -->
+         <p><strong>Grand Total:</strong> KES <%= (requisition.grandTotal || (requisition.items || []).reduce((acc, i) => acc + Number(i.total || 0), 0)).toFixed(2) %></p> 
         <p><a href="/hod/dashboard" style="color: #fff; background: #0071bc; padding: 7px 12px; text-decoration: none; border-radius: 4px;">Back to Dashboard</a></p>
     </div>
 
