@@ -18,18 +18,29 @@
         </nav> -->
         <%- include('partials/nav') %>
 
-        <div class="tables">
-            <section id="date">
-            <form action="/requisition/submit-to-hod" method="POST">
-                <table id="table1">
-                    <tr>
-                        <td>DATE</td>
-                        <td id="datae"> <input type="date" name="requestdate" id="date" style="border:none;"></td>
-                    </tr>
-                    <tr>
-                        <td>STAFF NAME</td>
-                        <td id="datae"> <input type="text" name="staffName" placeholder="Your name" style="border:none; width: 100%;"></td>
-                    </tr>
+                        <div class="tables">
+                            <section id="date">
+                            <form action="/requisition/submit-to-hod" method="POST">
+                                <table id="table1">
+                                    <tr>
+                                        <td>DATE</td>
+                                        <td id="datae"> <input type="date" name="requestdate" id="date" style="border:none;"></td>
+                                    </tr>
+                                    <!-- <tr>
+                                        <td>STAFF NAME</td>
+                                        <td id="datae"> <input type="text" name="staffName" placeholder="Your name" style="border:none; width: 100%;"></td>
+                                    </tr> -->
+                                    <tr>
+                    <td>STAFF NAME</td>
+                    <td id="datae">
+                        <b><input type="text" 
+                            name="staffName" 
+                            value="<%= user %>" 
+                            readonly 
+                            style="font-weight: bold;font-family:Verdana, Geneva, Tahoma, sans-serif; color: darkblue; border:none; width: 100%; background-color: #f4f4f4; cursor: not-allowed;"
+                            title="Name is automatically set from your login session"></b>
+                    </td>
+                </tr>
                      <tr>
                         <td id="datae"  > DEPARTMENT</td>
                         <td><select name="department"><option value="">Department</option>
@@ -123,6 +134,26 @@
             <p>Signature:</p>
             </div></section>
          -->
+
+<% 
+  // 1. Filter the data based on user permissions
+  let visibleRequisitions = [];
+
+  if (user.role === 'finance' || user.role === 'director') {
+      // Full access: see everything
+      visibleRequisitions = requisitions;
+  } else if (user.role === 'hod') {
+      // Departmental access: see only their department
+      visibleRequisitions = requisitions.filter(r => r.department === user.department);
+  } else {
+      // Staff access: see only their own submissions
+      visibleRequisitions = requisitions.filter(r => r.submittedBy === user.id);
+  }
+%>
+
+
+
+
     <!-- Requisition progress tracker -->
     <section class="progress-tracker" style="margin-top: 20px; width: 100%;">
         <h3>My Requisition Progress</h3>
@@ -131,7 +162,7 @@
                 <thead>
                     <tr>
                         <th style="border: 1px solid #ddd; padding: 8px;">ID</th>
-                        <th style="border: 1px solid #ddd; padding: 8px;">Staff</th>
+                        <th style="border: 1px solid #ddd; padding: 8px;">Staff-Name</th>
                         <th style="border: 1px solid #ddd; padding: 8px;">Department</th>
                         <th style="border: 1px solid #ddd; padding: 8px;">Request Date</th>
                         <th style="border: 1px solid #ddd; padding: 8px;">Status</th>

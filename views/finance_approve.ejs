@@ -163,12 +163,15 @@
         <h2><%= role === 'hod' ? 'HOD' : (role === 'finance' ? 'FINANCE' : 'DIRECTOR') %> APPROVAL INTERFACE</h2>
     </div>
 
-    <nav class="main-nav">
+    <!-- <nav class="main-nav">
         <a href="/">New Requisition</a>
         <a href="/hod/dashboard">HOD Dashboard</a>
         <a href="/finance/dashboard">Finance Dashboard</a>
         <a href="/director/dashboard">Director Dashboard</a>
-    </nav>
+    </nav> -->
+     <%- include('partials/nav') %>
+
+
 
     <div class="summary-box">
         <p><strong>Requisition ID:</strong> <%= requisition.id %></p>
@@ -245,7 +248,9 @@
                 <td><%= item.description || 'N/A' %></td>
                 <td><%= item.qty || 0 %></td>
                 <td>KES <%= (Number(item.unitPrice) || 0).toFixed(2) %></td>
-                <td>KES <%= itemTotal.toFixed(2) %></td>
+               <td style="padding: 12px;" class="<%= req.grandTotal > 100000 ? 'high-value' : '' %>">
+                    KES <%= Number(req.grandTotal).toLocaleString(undefined, {minimumFractionDigits: 2}) %>
+                </td>
             </tr>
             <% }); } else { %>
             <tr>

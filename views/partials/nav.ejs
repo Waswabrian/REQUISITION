@@ -1,13 +1,44 @@
 <nav class="main-nav">
-    <a href="/" class="<%= currentPage === 'new' ? 'active' : '' %>">New Requisition</a>
+    <a href="/home" class="<%= currentPage === 'new' ? 'active' : '' %>">New Requisition</a>
     <a href="/hod/dashboard" class="<%= currentPage === 'hod' ? 'active' : '' %>">HOD Dashboard</a>
     <a href="/finance/dashboard" class="<%= currentPage === 'finance' ? 'active' : '' %>">Finance</a>
     <a href="/director/dashboard" class="<%= currentPage === 'director' ? 'active' : '' %>">Director</a>
     
-    <div style="margin-left: auto;">
-        <span style="color: #64748b; font-size: 0.8rem; margin-right: 10px;">
-            Hello, <%= user.username %>
+    <div style="margin-left: auto; display: flex;color: #c6cfdd;">
+        <span style="color: #c6cfdd; font-size: 0.8rem; margin-right: 10px;">
+           <%= user.username %>
         </span>
-        <a href="/logout" style="color: #b91c1c;">Logout</a>
+        <a href="/logout" style="color: #dc2424;">Logout</a>
     </div>
 </nav>
+<style>
+.p{
+    color:#c6cfdd;
+}
+.main-nav {
+    background: #1e3a8a;
+    padding: 0.6rem 1rem;
+    text-align: center;
+    border-radius: 8px;
+    margin: 1rem auto;
+    max-width: 980px;
+}
+
+.main-nav a {
+    color: #fff;
+    text-decoration: none;
+    margin: 0 0.8rem;
+    font-weight: 600;
+}
+
+.main-nav a:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 640px) {
+    .main-nav a {
+        display: block;
+        margin: 0.25rem 0;
+    }
+}
+</style>

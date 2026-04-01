@@ -154,15 +154,17 @@
 <body>
     <div class="top">
         <img src="/Images/octagon-logo.png" id="logo" alt="Octagon Logo">
-        <h3>DIRECTOR APPROVAL INTERFACE</h3>
+        <%- include('partials/nav') %>
     </div>
 
-    <nav class="main-nav">
-        <a href="/">New Requisition</a>
+    <!-- <nav class="main-nav">
+        <a href="/home">New Requisition</a>
         <a href="/hod/dashboard">HOD Dashboard</a>
         <a href="/finance/dashboard">Finance Dashboard</a>
         <a href="/director/dashboard">Director Dashboard</a>
-    </nav>
+    </nav> -->
+
+     <!-- <%- include('partials/nav') %> -->
 
     <div class="part1">
         <h1>Director Dashboard</h1>
@@ -232,9 +234,9 @@
                     <td style="padding: 12px;"><%= req.staffName %></td>
                     <td style="padding: 12px;"><%= req.department %></td>
                     <td style="padding: 12px;"><%= new Date(req.requestDate).toLocaleDateString() %></td>
-                    <td style="padding: 12px;" class="<%= total > 100000 ? 'high-value' : '' %>">
-                        KES <%= total.toFixed(2) %>
-                    </td>
+                    <td style="padding: 12px;" class="<%= req.grandTotal > 100000 ? 'high-value' : '' %>">
+                        KES <%= Number(req.grandTotal).toLocaleString(undefined, {minimumFractionDigits: 2}) %>
+                            </td>
                     <td style="padding: 12px;">
                         <span class="status-badge status-approved">✓ Approved</span>
                     </td>

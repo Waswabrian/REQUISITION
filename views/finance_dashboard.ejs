@@ -2,6 +2,7 @@
 <html>
 <head>
     <title>Finance Dashboard - Requisition System</title>
+    <link rel="stylesheet" href="/styles/dashboard.css">
     <style>
         * {
             margin: 0;
@@ -137,13 +138,13 @@
         <h3>FINANCE APPROVAL INTERFACE</h3>
     </div>
 
-    <nav class="main-nav">
+    <!-- <nav class="main-nav">
         <a href="/">New Requisition</a>
         <a href="/hod/dashboard">HOD Dashboard</a>
         <a href="/finance/dashboard">Finance Dashboard</a>
         <a href="/director/dashboard">Director Dashboard</a>
-    </nav>
-
+    </nav> -->
+        <%- include('partials/nav') %>
     <div class="part1">
         <h1>Finance Dashboard</h1>
         <p>Welcome, <strong><%= user %></strong> | <a href="/logout">Logout</a></p>
@@ -190,10 +191,19 @@
                     <td style="padding: 12px;"><%= req.staffName %></td>
                     <td style="padding: 12px;"><%= req.department %></td>
                     <td style="padding: 12px;"><%= new Date(req.requestDate).toLocaleDateString() %></td>
-                    <td style="padding: 12px;" class="<%= req.totalAmount > 100000 ? 'high-value' : '' %>">
-                        KES <%= req.totalAmount.toFixed(2) %>
+                                <td style="padding: 12px;" class="<%= req.grandTotal > 100000 ? 'high-value' : '' %>">
+                        KES <%= Number(req.grandTotal).toLocaleString(undefined, {minimumFractionDigits: 2}) %>
                     </td>
-                    <td style="padding: 12px;"><%= req.hodSignature || 'Pending' %></td>
+                    <!-- <td style="padding: 12px;"><%= req.hodSignature || 'Pending' %></td> -->
+                    <td style="padding: 12px;">
+                    <% if (req.hodSignature && req.hodSignature !== 'Pending') { %>
+                        <img src="/uploads/signatures/<%= req.hodSignature %>" alt="HOD Signature" style="width: 100px; height: auto;">
+                    <% } else { %>
+                        <span style="color: #888; font-style: italic;">Pending</span>
+                    <% } %>
+                    </td>
+
+
                     <td style="padding: 12px;">
                         <a href="/finance/approval/<%= req.id %>" class="btn-review">Review</a>
                     </td>

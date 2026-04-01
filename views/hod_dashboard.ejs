@@ -123,12 +123,14 @@
         <h3>HOD APPROVAL INTERFACE</h3>
     </div>
 
-    <nav class="main-nav">
+    <!-- <nav class="main-nav">
         <a href="/home">New Requisition</a>
         <a href="/hod/dashboard">HOD Dashboard</a>
         <a href="/finance/dashboard">Finance Dashboard</a>
         <a href="/director/dashboard">Director Dashboard</a>
-    </nav>
+    </nav> -->
+        <%- include('partials/nav') %>
+    
     
     <div class="part1">
         <h1>HOD Dashboard</h1>
@@ -198,7 +200,8 @@
                     <td><%= req.staffName %></td>
                     <td><%= req.department || 'N/A' %></td>
                     <td><%= new Date(req.requestDate).toLocaleDateString() %></td>
-                    <td><strong>KES <%= total.toFixed(2) %></strong></td>
+                    
+                    <td><strong> KES <%= Number(req.grandTotal).toLocaleString(undefined, {minimumFractionDigits: 2}) %></strong></td>
                     <td><span style="background: #ff9800; color: white; padding: 3px 8px; border-radius: 3px; font-size: 12px;"><%= statusDisplay %></span></td>
                    <td>
                     <a href="/hod/approval/<%= req.id %>" class="btn-review">
@@ -215,9 +218,5 @@
         </div>
     <% } %>
     
-    <div class="links">
-        <a href="/home">📝 Create New Requisition</a> | 
-        <a href="/">🏠 Back to Home</a>
-    </div>
 </body>
 </html>
