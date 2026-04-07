@@ -135,16 +135,10 @@
 <body>
     <div class="top">
         <img src="/Images/octagon-logo.png" id="logo" alt="Octagon Logo">
-        <h3>FINANCE APPROVAL INTERFACE</h3>
+        <%- include('partials/nav') %>
     </div>
 
-    <!-- <nav class="main-nav">
-        <a href="/">New Requisition</a>
-        <a href="/hod/dashboard">HOD Dashboard</a>
-        <a href="/finance/dashboard">Finance Dashboard</a>
-        <a href="/director/dashboard">Director Dashboard</a>
-    </nav> -->
-        <%- include('partials/nav') %>
+        
     <div class="part1">
         <h1>Finance Dashboard</h1>
         <p>Welcome, <strong><%= user %></strong> | <a href="/logout">Logout</a></p>
@@ -216,10 +210,63 @@
             <p>✅ No requisitions waiting for finance approval.</p>
         </div>
     <% } %>
-    
-    <div class="links">
-        <a href="/home">📝 Create New Requisition</a> | 
-        <a href="/">🏠 Back to Home</a>
-    </div>
+ 
+
+
+    <!-- Requisition progress tracker -->
+    <section class="progress-tracker" style="margin-top: 20px; width: 100%;">
+        <h3 style="padding-left:15px;">Requisition Progress</h3>
+
+           <% 
+  // 1. Filter the data based on user permissions
+  let visibleRequisitions = [];
+
+  if (user.role === 'finance' || user.role === 'director') {
+      // Full access: see everything
+      visibleRequisitions = requisitions;
+  } else if (user.role === 'hod') {
+      // Departmental access: see only their department
+      visibleRequisitions = requisitions.filter(r => r.department === user.department);
+  } else {
+      // Staff access: see only their own submissions
+      visibleRequisitions = requisitions.filter(r => r.submittedBy === user.id);
+  }
+%>
+
+
+        <% if (requisitions && requisitions.length > 0) { %>
+            <table id="tracking-table" style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr>
+                        <th style="border: 1px solid #ddd; padding: 8px;">ID</th>
+                        <th style="border: 1px solid #ddd; padding: 8px;">Staff-Name</th>
+                        <th style="border: 1px solid #ddd; padding: 8px;">Department</th>
+                        <th style="border: 1px solid #ddd; padding: 8px;">Request Date</th>
+                        <th style="border: 1px solid #ddd; padding: 8px;">Total Amount</th>
+                        <th style="border: 1px solid #ddd; padding: 8px;">Status</th>
+                        <th style="border: 1px solid #ddd; padding: 8px;">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                <% requisitions.forEach(req => { %>
+                <tr>
+                    <td style="border: 1px solid #ddd; padding: 8px;"><%= req.id %></td>
+                    <td style="border: 1px solid #ddd; padding: 8px;"><%= req.staffName %></td>
+                    <td style="border: 1px solid #ddd; padding: 8px;"><%= req.department %></td>
+                    <td style="border: 1px solid #ddd; padding: 8px;"><%= new Date(req.requestDate).toLocaleDateString() %></td>
+                     <td style="padding: 12px;" class="<%= req.grandTotal > 100000 ? 'high-value' : '' %>">
+                        KES <%= Number(req.grandTotal).toLocaleString(undefined, {minimumFractionDigits: 2}) %>
+                    </td>
+                    <td style="border: 1px solid #ddd; padding: 8px;"><strong><%= req.status %></strong></td>
+                    <td style="border: 1px solid #ddd; padding: 8px;"><a href="/hod/approval/<%= req.id %>">View</a></td>
+                </tr>
+                <% }) %>
+                </tbody>
+            </table>
+        <% } else { %>
+            <p>No previous requisitions found yet. Submit one and it will appear here.</p>
+        <% } %>
+    </section>
+
 </body>
 </html>

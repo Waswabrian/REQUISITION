@@ -228,7 +228,7 @@
                 <th>Quantity</th>
                 <th>Unit Price (KES)</th>
                 <th>Total (KES)</th>
-            </tr>
+             </tr>
         </thead>
         <tbody>
             <% 
@@ -247,16 +247,16 @@
             }
             
             if (itemsArray.length > 0) {
-                itemsArray.forEach(function(item) { 
-                    const qty = parseFloat(item.qty) || 0;
-                    const unitPrice = parseFloat(item.unitPrice) || 0;
-                    const itemTotal = parseFloat(item.total) || (qty * unitPrice);
+                itemsArray.forEach(item => { 
+                    const itemTotal = Number(item.total) || (Number(item.qty) * Number(item.unitPrice)) || 0;
             %>
             <tr>
                 <td><%= item.description || 'N/A' %></td>
-                <td><%= qty %></td>
-                <td>KES <%= unitPrice.toFixed(2) %></td>
-                <td>KES <%= itemTotal.toFixed(2) %></td>
+                <td><%= item.qty || 0 %></td>
+                <td>KES <%= (Number(item.unitPrice) || 0).toFixed(2) %></td>
+               <td style="padding: 12px;" class="<%= requisition.grandTotal > 100000 ? 'high-value' : '' %>">
+                    KES <%= Number(requisition.grandTotal).toLocaleString(undefined, {minimumFractionDigits: 2}) %>
+                </td>
             </tr>
             <% }); } else { %>
             <tr>
@@ -265,6 +265,7 @@
             <% } %>
         </tbody>
     </table>
+
 
     <form id="approvalForm" action="/<%= role %>/submit-approval/<%= requisition.id %>" method="POST">
         <div class="approval-container">

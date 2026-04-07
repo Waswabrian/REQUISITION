@@ -2,7 +2,7 @@
 <html>
 <head>
     <title>HOD Dashboard - Requisition System</title>
-    <link rel="stylesheet" href="/styles/hod_dashboard.css">
+    <link rel="stylesheet" href="/styles/index.css">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -41,8 +41,8 @@
             border-radius: 3px;
         }
         .part1 {
-            padding: 20px;
             background: white;
+            padding: 20px;
             margin: 20px;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
@@ -120,7 +120,7 @@
 <body>
     <div class="top">
         <img src="/Images/octagon-logo.png" id="logo" alt="Octagon Logo">
-        <h3>HOD APPROVAL INTERFACE</h3>
+         <%- include('partials/nav') %>
     </div>
 
     <!-- <nav class="main-nav">
@@ -129,12 +129,12 @@
         <a href="/finance/dashboard">Finance Dashboard</a>
         <a href="/director/dashboard">Director Dashboard</a>
     </nav> -->
-        <%- include('partials/nav') %>
+       
     
     
-    <div class="part1">
+     <div class="part1">
         <h1>HOD Dashboard</h1>
-        <p><h3>Welcome, <%= user %> | <a href="/logout">Logout</a></h3></p>
+        <p>Welcome, <strong><%= user %></strong> | <a href="/logout">Logout</a></p>
     </div>
     
     <% if (success) { %>
@@ -147,7 +147,7 @@
     
     <h2>Pending Requisitions</h2>
     
-    <% if (requests && requests.length > 0) { %>
+    <% if (requisitions && requisitions.length > 0) { %>
          <table>
             <thead>
                 <tr>
@@ -161,7 +161,7 @@
                 </tr>
             </thead>
             <tbody>
-                <% requests.forEach(function(req) { 
+                <% requisitions.forEach(function(req) { 
                     // SAFE CALCULATION - handles both string and array
                     let total = 0;
                     
@@ -201,7 +201,12 @@
                     <td><%= req.department || 'N/A' %></td>
                     <td><%= new Date(req.requestDate).toLocaleDateString() %></td>
                     
-                    <td><strong> KES <%= Number(req.grandTotal).toLocaleString(undefined, {minimumFractionDigits: 2}) %></strong></td>
+                    <strong><b><td class="<%= (req.grandTotal > 100000) ? 'high-value' : '' %>">
+                        KES <%= Number(req.grandTotal || 0).toLocaleString(undefined, {
+                            minimumFractionDigits: 2, 
+                            maximumFractionDigits: 2
+                        }) %>
+                    </td></b></strong>
                     <td><span style="background: #ff9800; color: white; padding: 3px 8px; border-radius: 3px; font-size: 12px;"><%= statusDisplay %></span></td>
                    <td>
                     <a href="/hod/approval/<%= req.id %>" class="btn-review">
@@ -217,6 +222,60 @@
             <p>✅ No pending requisitions to review.</p>
         </div>
     <% } %>
+<% 
+  // 1. Filter the data based on user permissions
+  let visibleRequisitions = [];
+
+  if (user.role === 'finance' || user.role === 'director') {
+      // Full access: see everything
+      visibleRequisitions = requisitions;
+  } else if (user.role === 'hod') {
+      // Departmental access: see only their department
+      visibleRequisitions = requisitions.filter(r => r.department === user.department);
+  } else {
+      // Staff access: see only their own submissions
+      visibleRequisitions = requisitions.filter(r => r.submittedBy === user.id);
+  }
+%>
+
+
+
+
+    <!-- Requisition progress tracker -->
+    <section class="progress-tracker" style="margin-top: 20px; width: 100%;">
+        <h3>My Requisition Progress</h3>
+        <% if (requisitions && requisitions.length > 0) { %>
+            <table id="tracking-table" style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr>
+                        <th style="border: 1px solid #ddd; padding: 8px;">ID</th>
+                        <th style="border: 1px solid #ddd; padding: 8px;">Staff-Name</th>
+                        <th style="border: 1px solid #ddd; padding: 8px;">Department</th>
+                        <th style="border: 1px solid #ddd; padding: 8px;">Item</th>
+                        <th style="border: 1px solid #ddd; padding: 8px;">Request Date</th>
+                        <th style="border: 1px solid #ddd; padding: 8px;">Status</th>
+                        <th style="border: 1px solid #ddd; padding: 8px;">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                <% requisitions.forEach(req => { %>
+                <tr>
+                    <td style="border: 1px solid #ddd; padding: 8px;"><%= req.id %></td>
+                    <td style="border: 1px solid #ddd; padding: 8px;"><%= req.staffName %></td>
+                    <td style="border: 1px solid #ddd; padding: 8px;"><%= req.department %></td>
+                    <td style="border: 1px solid #ddd; padding: 8px;"><%= req.items %></td>
+                    <td style="border: 1px solid #ddd; padding: 8px;"><%= new Date(req.requestDate).toLocaleDateString() %></td>
+                    <td style="border: 1px solid #ddd; padding: 8px;"><strong><%= req.status %></strong></td>
+                    <td style="border: 1px solid #ddd; padding: 8px;"><a href="/hod/approval/<%= req.id %>">View</a></td>
+                </tr>
+                <% }) %>
+                </tbody>
+            </table>
+        <% } else { %>
+            <p>No previous requisitions found yet. Submit one and it will appear here.</p>
+        <% } %>
+    </section>
+
     
 </body>
 </html>

@@ -24,35 +24,60 @@
         <p><strong>Staff:</strong> <%= requisition.staffName || 'Unknown' %></p>
         <p><strong>Department:</strong> <%= requisition.department || 'N/A' %></p>
         <p><strong>Date:</strong> <%= requisition.requestDate || 'N/A' %></p>
-        <p><strong>Grand Total:</strong> KES <% 
-                         let grandTotal = requisition.grandTotal;
-                         if (!grandTotal && grandTotal !== 0) {
-                         grandTotal = (requisition.items || []).reduce((acc, i) => acc + Number(i.total || 0), 0);
-                                 }
-            // Ensure it's a number
-                        grandTotal = Number(grandTotal) || 0;
-                        %><%= grandTotal.toFixed(2) %></p>  
+        <td class="<%= (req.grandTotal > 100000) ? 'high-value' : '' %>">
+                        KES <%= Number(req.grandTotal || 0).toLocaleString(undefined, {
+                            minimumFractionDigits: 2, 
+                            maximumFractionDigits: 2
+                        }) %>
+                    </td>
          <p><strong>Grand Total:</strong> KES <%= (requisition.grandTotal || (requisition.items || []).reduce((acc, i) => acc + Number(i.total || 0), 0)).toFixed(2) %></p> 
         <p><a href="/hod/dashboard" style="color: #fff; background: #0071bc; padding: 7px 12px; text-decoration: none; border-radius: 4px;">Back to Dashboard</a></p>
     </div>
 
-    <table id="table2">
-        <tr style="font-weight: bold;">
-            <td>Item Description</td>
-            <td>Quantity</td>
-            <td>Unit</td>
-            <td>Total</td>
-        </tr>
-        <% requisition.items.forEach(item => { %>
-        <tr>
-            <td><%= item.description %></td>
-            <td><%= item.qty %></td>
-            <td><%= item.unit %></td>
-            <td><%= item.total %></td>
-        </tr>
-        <% }) %>
+   <table>
+        <thead>
+            <tr style="font-weight: bold; background: #f5f5f5;">
+                <th>Item Description</th>
+                <th>Quantity</th>
+                <th>Unit Price (KES)</th>
+                <th>Total (KES)</th>
+             </tr>
+        </thead>
+        <tbody>
+            <% 
+            let itemsArray = [];
+            if (requisition.items) {
+                if (Array.isArray(requisition.items)) {
+                    itemsArray = requisition.items;
+                } else if (typeof requisition.items === 'string') {
+                    try {
+                        itemsArray = JSON.parse(requisition.items);
+                    } catch(e) {
+                        console.error('Error parsing items:', e);
+                        itemsArray = [];
+                    }
+                }
+            }
+            
+            if (itemsArray.length > 0) {
+                itemsArray.forEach(item => { 
+                    const itemTotal = Number(item.total) || (Number(item.qty) * Number(item.unitPrice)) || 0;
+            %>
+            <tr>
+                <td><%= item.items || 'N/A' %></td>
+                <td><%= item.qty || 0 %></td>
+                <td>KES <%= (Number(item.unitPrice) || 0).toFixed(2) %></td>
+               <td style="padding: 12px;" class="<%= req.grandTotal > 100000 ? 'high-value' : '' %>">
+                    KES <%= Number(req.grandTotal).toLocaleString(undefined, {minimumFractionDigits: 2}) %>
+                </td>
+            </tr>
+            <% }); } else { %>
+            <tr>
+                <td colspan="4" style="text-align: center;">No items found</td>
+            </tr>
+            <% } %>
+        </tbody>
     </table>
-
     <form id="approvalForm" action="/hod/submit-approval/<%= requisition.id %>" method="POST">
         <div class="approval-container">
             <h3>HOD/Supervisor Action</h3>

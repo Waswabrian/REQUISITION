@@ -2,6 +2,7 @@
 <html>
 <head>
     <title>Director Dashboard - Requisition System</title>
+    <link rel="stylesheet" href="/director_dashboard.css">
     <style>
         * {
             margin: 0;
@@ -149,6 +150,10 @@
             margin: 20px;
             color: #333;
         }
+        .item-description {
+            max-width: 300px;
+            word-wrap: break-word;
+        }
     </style>
 </head>
 <body>
@@ -156,15 +161,6 @@
         <img src="/Images/octagon-logo.png" id="logo" alt="Octagon Logo">
         <%- include('partials/nav') %>
     </div>
-
-    <!-- <nav class="main-nav">
-        <a href="/home">New Requisition</a>
-        <a href="/hod/dashboard">HOD Dashboard</a>
-        <a href="/finance/dashboard">Finance Dashboard</a>
-        <a href="/director/dashboard">Director Dashboard</a>
-    </nav> -->
-
-     <!-- <%- include('partials/nav') %> -->
 
     <div class="part1">
         <h1>Director Dashboard</h1>
@@ -178,87 +174,115 @@
     <% if (error) { %>
         <div class="error"><%= error %></div>
     <% } %>
-    
-    <div class="stats">
-        <div class="stat-card">
-            <div class="stat-number"><%= stats ? stats.total : 0 %></div>
-            <div class="stat-label">Pending Approvals</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-number"><%= stats ? stats.highValue : 0 %></div>
-            <div class="stat-label">High Value (>100k)</div>
-        </div>
-    </div>
-    
-    <h2>Requisitions Pending Director Approval</h2>
-    
-    <% if (requisitions && requisitions.length > 0) { %>
-        <table style="width: calc(100% - 40px); margin: 20px;">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Staff Name</th>
-                    <th>Department</th>
-                    <th>Request Date</th>
-                    <th>Total Amount</th>
-                    <th>HOD Status</th>
-                    <th>Finance Status</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                <% requisitions.forEach(function(req) { 
-                    // Calculate total safely
-                    let total = 0;
-                    if (req.items) {
-                        if (Array.isArray(req.items)) {
-                            total = req.items.reduce((sum, item) => {
+
+    <h2>Requisitions  Made </h2>
+
+    <% 
+      // Single declaration of visibleRequisitions
+      let visibleRequisitions = [];
+      if (user && (user.role === 'admin' || user.username === 'brian')) {
+          visibleRequisitions = requisitions;
+      } else if (user && user.role === 'director') {
+          visibleRequisitions = requisitions; 
+      } else if (requisitions) {
+          visibleRequisitions = requisitions.filter(function(r) { return r.submittedBy === user.id; });
+      }
+    %>
+
+    <% if (visibleRequisitions && visibleRequisitions.length > 0) { %>
+        <div style="overflow-x: auto; margin: 20px;">
+            <table style="width: 100%; margin: 0;">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Staff Name</th>
+                        <th>Department</th>
+                        <th>Request Date</th>
+                        <th>Total Amount</th>
+                        <th>HOD Status</th>
+                        <th>Finance Status</th>
+                        <th>Item Description</th>
+                       
+                    </tr>
+                </thead>
+                <tbody>
+                    <% for(var i = 0; i < visibleRequisitions.length; i++) { 
+                        var req = visibleRequisitions[i];
+                        
+                        // Safely extract item description
+                        var displayDescription = "No items listed";
+                        
+                        try {
+                            // Check if items exists and is an array
+                            if (req.items && Array.isArray(req.items) && req.items.length > 0) {
+                                var firstItem = req.items[0];
+                                if (firstItem && firstItem.description) {
+                                    displayDescription = firstItem.description;
+                                    if (req.items.length > 1) {
+                                        displayDescription = displayDescription + " (+" + (req.items.length - 1) + " more)";
+                                    }
+                                }
+                            }
+                            // If items is a string, try to parse it
+                            else if (req.items && typeof req.items === 'string') {
+                                var parsedItems = JSON.parse(req.items);
+                                if (parsedItems && parsedItems.length > 0 && parsedItems[0].description) {
+                                    displayDescription = parsedItems[0].description;
+                                    if (parsedItems.length > 1) {
+                                        displayDescription = displayDescription + " (+" + (parsedItems.length - 1) + " more)";
+                                    }
+                                }
+                            }
+                        } catch(e) {
+                            displayDescription = "Error loading description";
+                            console.error("Error parsing items for requisition " + req.id + ":", e);
+                        }
+                        
+                        // Calculate total safely
+                        var totalAmount = req.grandTotal || 0;
+                        if (totalAmount === 0 && req.items && Array.isArray(req.items)) {
+                            totalAmount = req.items.reduce(function(sum, item) {
                                 return sum + (Number(item.total) || Number(item.qty) * Number(item.unitPrice) || 0);
                             }, 0);
-                        } else if (typeof req.items === 'string') {
-                            try {
-                                const itemsArray = JSON.parse(req.items);
-                                total = itemsArray.reduce((sum, item) => {
-                                    return sum + (Number(item.total) || Number(item.qty) * Number(item.unitPrice) || 0);
-                                }, 0);
-                            } catch(e) {
-                                total = Number(req.grandTotal) || 0;
-                            }
                         }
-                    } else if (req.grandTotal) {
-                        total = Number(req.grandTotal);
-                    }
-                %>
-                <tr style="border-bottom: 1px solid #eee;">
-                    <td style="padding: 12px;"><%= req.id %></td>
-                    <td style="padding: 12px;"><%= req.staffName %></td>
-                    <td style="padding: 12px;"><%= req.department %></td>
-                    <td style="padding: 12px;"><%= new Date(req.requestDate).toLocaleDateString() %></td>
-                    <td style="padding: 12px;" class="<%= req.grandTotal > 100000 ? 'high-value' : '' %>">
-                        KES <%= Number(req.grandTotal).toLocaleString(undefined, {minimumFractionDigits: 2}) %>
-                            </td>
-                    <td style="padding: 12px;">
-                        <span class="status-badge status-approved">✓ Approved</span>
-                    </td>
-                    <td style="padding: 12px;">
-                        <span class="status-badge status-approved">✓ Approved</span>
-                    </td>
-                    <td style="padding: 12px;">
-                        <a href="/director/approval/<%= req.id %>" class="btn-review">Review</a>
-                    </td>
-                </tr>
-                <% }); %>
-            </tbody>
-        </table>
+                    %>
+                    <tr>
+                        <td>#<%= req.id %></td>
+                        <td><%= req.staffName || 'N/A' %></td>
+                        <td><%= req.department || 'N/A' %></td>
+                        <td><%= req.requestDate ? new Date(req.requestDate).toLocaleDateString() : 'N/A' %></td>
+                        <td class="<%= totalAmount > 100000 ? 'high-value' : '' %>">
+                            KES <%= Number(totalAmount).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) %>
+                        </td>
+                        <td><span class="status-badge status-approved">✓ Approved</span></td>
+                        <td><span class="status-badge status-approved">✓ Approved</span></td>
+                      <td style="color:black;" class="item-description" title="<%= (function() {
+    try {
+        if (req.items && Array.isArray(req.items) && req.items.length > 0 && req.items[0].description) {
+            return req.items[0].description;
+        } else if (req.items && typeof req.items === 'string') {
+            var parsed = JSON.parse(req.items);
+            if (parsed && parsed.length > 0 && parsed[0].description) {
+                return parsed[0].description;
+            }
+        }
+        return 'No items listed';
+    } catch(e) {
+        return 'No items listed';
+    }
+})() %>">
+   
+</td>
+                     
+                    </tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
     <% } else { %>
         <div style="margin: 20px; padding: 20px; background: white; border-radius: 8px; text-align: center;">
             <p>✅ No requisitions waiting for director approval.</p>
         </div>
     <% } %>
-    
-    <div class="links">
-        <a href="/home">📝 Create New Requisition</a> | 
-        <a href="/">🏠 Back to Home</a>
-    </div>
 </body>
 </html>

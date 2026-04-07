@@ -36,15 +36,41 @@
                     <td>Total</td>
                 </tr>
             </thead>
-            <tbody>
-                <% requisition.items.forEach(item => { %>
-                <tr>
-                    <td><%= item.description %></td>
-                    <td><%= item.qty %></td>
-                    <td><%= item.total %></td>
-                </tr>
-                <% }) %>
-            </tbody>
+                <tbody>
+            <% 
+            let itemsArray = [];
+            if (requisition.items) {
+                if (Array.isArray(requisition.items)) {
+                    itemsArray = requisition.items;
+                } else if (typeof requisition.items === 'string') {
+                    try {
+                        itemsArray = JSON.parse(requisition.items);
+                    } catch(e) {
+                        console.error('Error parsing items:', e);
+                        itemsArray = [];
+                    }
+                }
+            }
+            
+            if (itemsArray.length > 0) {
+                itemsArray.forEach(item => { 
+                    const itemTotal = Number(item.total) || (Number(item.qty) * Number(item.unitPrice)) || 0;
+            %>
+           <tr>
+    <td><%= item.description || 'N/A' %></td>
+    <td><%= item.qty || 0 %></td>
+    <td>KES <%= (Number(item.unitPrice) || 0).toFixed(2) %></td>
+    
+    <td style="padding: 12px;" class="<%= requisition.grandTotal > 100000 ? 'high-value' : '' %>">
+        KES <%= Number(itemTotal).toLocaleString(undefined, {minimumFractionDigits: 2}) %>
+    </td>
+</tr>
+            <% }); } else { %>
+            <tr>
+                <td colspan="4" style="text-align: center;">No items found</td>
+            </tr>
+            <% } %>
+        </tbody>
         </table>
     </div>
 
