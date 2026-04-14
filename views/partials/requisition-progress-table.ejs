@@ -1,0 +1,76 @@
+app.get('/finance/dashboard', async (req, res) => {
+    const user = req.user; // assuming auth middleware
+    const role = user.role;
+
+    // Fetch all requisitions from DB
+    let requisitions = await db.getAllRequisitions(); // adjust to your DB
+
+    let visibleRequisitions = [];
+
+    if (role === 'staff') {
+        // Only their own
+        visibleRequisitions = requisitions.filter(r => 
+            r.staffId === user.id
+        );
+
+    } else if (role === 'hod') {
+        // Own + department
+        visibleRequisitions = requisitions.filter(r => 
+            r.department === user.department
+        );
+
+    } else if (role === 'finance') {
+        // See everything
+        visibleRequisitions = requisitions;
+    }
+
+    res.render('finance_dashboard', {
+        user,
+        role,
+        visibleRequisitions
+    });
+});
+
+
+
+
+   <h2>Requisitions Made</h2>
+
+<% if (typeof visibleRequisitions !== 'undefined' && visibleRequisitions.length > 0) { %>
+    <div style="overflow-x: auto; margin: 20px;">
+        <table style="width: 100%; margin: 0;">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Staff Name</th>
+                    <th>Department</th>
+                    <th>Date</th>
+                    <th>Total Amount</th>
+                    <th>Status</th>
+                    <th>Item Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% visibleRequisitions.forEach(req => { %>
+                    <tr>
+                        <td>#<%= req.id %></td>
+                        <td><%= req.staffName || 'N/A' %></td>
+                        <td><%= req.department || 'N/A' %></td>
+                        <td><%= req.requestDate ? new Date(req.requestDate).toLocaleDateString() : 'N/A' %></td>
+                        <td class="<%= req.totalAmount > 100000 ? 'high-value' : '' %>">
+                            KES <%= Number(req.totalAmount || 0).toLocaleString() %>
+                        </td>
+                        <td><span class="status-badge status-approved">✓ Finalized</span></td>
+                        <td class="item-description">
+                            <%= (req.items && req.items.length > 0) ? req.items[0].description : 'No description' %>
+                        </td>
+                    </tr>
+                <% }) %>
+            </tbody>
+        </table>
+    </div>
+<% } else { %>
+    <div style="margin: 20px; padding: 20px; background: white; border-radius: 8px; text-align: center;">
+        <p>✅ No requisitions found to display.</p>
+    </div>
+<% } %>

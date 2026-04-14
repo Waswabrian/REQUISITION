@@ -1,9 +1,8 @@
-<!DOCTYPE html>
 <html>
-<head>
-    <title>Finance Dashboard - Requisition System</title>
-    <link rel="stylesheet" href="/styles/dashboard.css">
-    <style>
+    <head>
+        <title>Requisition #<%= requisition.id %> Details</title>
+        <link rel="stylesheet" href="/css/index.css"> 
+        <style>
         * {
             margin: 0;
             padding: 0;
@@ -131,100 +130,72 @@
             color: #333;
         }
     </style>
-</head>
+
+    </head>
 <body>
     <div class="top">
         <img src="/Images/octagon-logo.png" id="logo" alt="Octagon Logo">
         <%- include('partials/nav') %>
     </div>
 
-        
     <div class="part1">
-        <h1>Finance Dashboard</h1>
-        <p>Welcome, <strong><%= user %></strong> | <a href="/logout">Logout</a></p>
+        <h1>Approval History & Remarks</h1>
+        <p>Welcome, <strong><%= user %></strong> | <a href="/home">Back to Dashboard</a></p>
     </div>
-    <% if (locals.success) { %>
-        <div class="success"><%= success %></div>
-    <% } %>
-    
-    <% if (locals.error) { %>
-        <div class="error"><%= error %></div>
-    <% } %>
-    
-    
-    <div class="stats">
+   <table style="border: 1px solid black; width: 70%; margin: 40px auto; border-collapse: collapse;">
+    <tbody>
+        <tr>
+            <th colspan="2"><h2>Requisition #<%= requisition.id %> Details</h2></th>
+        </tr>
 
-    <div class="stat-card">
-        <div class="stat-number"><%= stats?.total || 0 %></div>
-        <div class="stat-label">Pending Approvals</div>
-    </div>
+        <tr>
+            <th colspan="2" style="padding: 15px; background-color: #fcfcfc;">
+                <% 
+                    let statusColor = '#0071bc'; 
+                    if (requisition.status) {
+                        if (requisition.status.includes('APPROVED')) {
+                            statusColor = '#28a745'; 
+                        } else if (requisition.status.includes('REJECTED')) {
+                            statusColor = '#d9534f'; 
+                        }
+                    }
+                %>
+                <p style="font-size: 18px; margin: 0;">
+                    Status: <strong style="color: <%= statusColor %>;"><%= requisition.status %></strong>
+                </p>
+            </th>
+        </tr>
 
-
-
-
-<div class="stat-card <%= stats?.highValue > 100000 ? 'high-value' : '' %>">
-    <div class="stat-number"><%= stats?.highValue || 0 %></div>
-    <div class="stat-label">High Value (&gt; 100k)</div>
-</div>
-    
-
-    <div class="stat-card bg-danger text-white">
-        <div class="stat-number"><%= stats.rejected || 0 %></div>
-        <div class="stat-label">Rejected Requests</div>
-    </div>
-
-</div>
-    
-    <h2>Requisitions Pending Finance Approval</h2>
-    
-    <% if (requisitions && requisitions.length > 0) { %>
-        <table style="width: calc(100% - 40px); margin: 20px;">
-            <thead style="background-color: blue;">
-                <tr>
-                    <th>ID</th>
-                    <th>Staff Name</th>
-                    <th>Department</th>
-                    <th>Request Date</th>
-                    <th>Total Amount</th>
-                    <th>HOD Status</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                <% requisitions.forEach(function(req) { %>
-                <tr style="border-bottom: 1px solid #eee;">
-                    <td style="padding: 12px;"><%= req.id %></td>
-                    <td style="padding: 12px;"><%= req.staffName %></td>
-                    <td style="padding: 12px;"><%= req.department %></td>
-                    <td style="padding: 12px;"><%= new Date(req.requestDate).toLocaleDateString() %></td>
-                                <td style="padding: 12px;" class="<%= req.grandTotal > 100000 ? 'high-value' : '' %>">
-                        KES <%= Number(req.grandTotal).toLocaleString(undefined, {minimumFractionDigits: 2}) %>
-                    </td>
-                    <!-- <td style="padding: 12px;"><%= req.hodSignature || 'Pending' %></td> -->
-                    <td style="padding: 12px;">
-                    <% if (req.hodSignature && req.hodSignature !== 'Pending') { %>
-                              <strong><%= req.status %></strong>
-                    <% } else { %>
-                        <span style="color: #888; font-style: italic;">Pending</span>
-                    <% } %>
-                    </td>
-
-
-                    <td style="padding: 12px;">
-                        <a href="/finance/approval/<%= req.id %>" class="btn-review">Review</a>
-                    </td>
-                </tr>
-                <% }); %>
-            </tbody>
-        </table>
-    <% } else { %>
-        <div style="margin: 20px; padding: 20px; background: white; border-radius: 8px; text-align: center;">
-            <p>✅ No requisitions waiting for finance approval.</p>
-        </div>
-    <% } %>
- 
-<!-- 
-     <%- include('partials/requisition-progress-table') %> -->
-
+        <% requisition.history.forEach(entry => { %>
+            <tr style="background-color: #f9f9f9; border-top: 2px solid #ddd;">
+                <td><strong>Stage:</strong></td>
+                <td><%= entry.stage %></td>
+            </tr>
+            <tr>
+                <td><strong>By:</strong></td>
+                <td><%= entry.user %></td>
+            </tr>
+            <tr>
+                <td><strong>Remarks/Reason:</strong></td>
+                <td><%= entry.comments || 'No comments provided' %></td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <small><%= new Date(entry.timestamp).toLocaleString() %></small>
+                </td>
+            </tr>
+        <% }) %>
+    </tbody>
+</table>
 </body>
 </html>
+
+
+
+
+
+
+</head>
+
+
+

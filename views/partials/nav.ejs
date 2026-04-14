@@ -1,14 +1,19 @@
+<head>
+    <link rel="stylesheet" href="/index.css">
+</head>
+
+
 <nav class="main-nav">
-    <a href="/home" class="<%= currentPage === 'new' ? 'active' : '' %>">New Requisition</a>
-    <a href="/hod/dashboard" class="<%= currentPage === 'hod' ? 'active' : '' %>">HOD Dashboard</a>
-    <a href="/finance/dashboard" class="<%= currentPage === 'finance' ? 'active' : '' %>">Finance</a>
-    <a href="/director/dashboard" class="<%= currentPage === 'director' ? 'active' : '' %>">Director</a>
+    <a href="/home" class="<%= (locals.currentPage === 'new') ? 'active' : '' %>">Home</a>
+    <a href="/hod/dashboard" class="<%= (locals.currentPage === 'hod') ? 'active' : '' %>">HOD Dashboard</a>
+    <a href="/finance/dashboard" class="<%= (locals.currentPage === 'finance') ? 'active' : '' %>">Finance</a>
+    <a href="/director/dashboard" class="<%= (locals.currentPage === 'director') ? 'active' : '' %>">Director</a>
     
-    <div style="margin-left: auto; display: flex;color: #c6cfdd;">
-        <span style="color: #c6cfdd; font-size: 0.8rem; margin-right: 10px;">
-           <%= user.username %>
-        </span>
-        <a href="/logout" style="color: #dc2424;">Logout</a>
+    <div class="nav-user-info">
+        
+         <a href="/logout" class="logout-link" style="color:red;">Logout</a>
+       
+       
     </div>
 </nav>
 <style>

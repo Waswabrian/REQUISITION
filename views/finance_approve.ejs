@@ -227,12 +227,12 @@
         <tbody>
             <% 
             let itemsArray = [];
-            if (requisition.items) {
-                if (Array.isArray(requisition.items)) {
-                    itemsArray = requisition.items;
-                } else if (typeof requisition.items === 'string') {
+            if (requisitions.item) {
+                if (Array.isArray(requisitions.item)) {
+                    itemsArray = requisitions.item;
+                } else if (typeof requisitions.item === 'string') {
                     try {
-                        itemsArray = JSON.parse(requisition.items);
+                        itemsArray = JSON.parse(requisitions.item   );
                     } catch(e) {
                         console.error('Error parsing items:', e);
                         itemsArray = [];
@@ -276,7 +276,7 @@
             
             <div class="form-group">
                 <label for="comments">Comments (Optional):</label>
-                <textarea name="comments" id="comments" rows="3" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ddd; border-radius: 4px;"></textarea>
+                <textarea name="comments" id="comments" rows="3" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ddd; border-radius: 4px;" required></textarea>
             </div>
         </div>
     </form>

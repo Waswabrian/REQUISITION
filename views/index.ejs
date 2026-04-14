@@ -1,10 +1,9 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>ICT Requisition form</title> 
-        <link rel="stylesheet" href="/styles/index.css">
-
-        <style>
+<head>
+    <title>ICT Requisition form</title> 
+    <link rel="stylesheet" href="/styles/index.css">
+   <style>
         * {
             margin: 0;
             padding: 0;
@@ -132,85 +131,79 @@
             color: #333;
         }
     </style>
-    </head>
-   <body>
+</head>
+<body>
     <div class="top">
         <img src="/Images/octagon-logo.png" id="logo" alt="Octagon Logo">
-         <%- include('partials/nav') %>
+        <%- include('partials/nav') %>
     </div>
 
-   <div class="part1">
+    <div class="part1">
         <h1>Staff Dashboard</h1>
         <p>Welcome, <strong><%= user %></strong> | <a href="/logout">Logout</a></p>
     </div>
 
-           <div class="tables">
-                   <section id="date">
-                        <form action="/requisition/submit-to-hod" method="POST">
-                                <table id="table1">
-                                    <tr>
-                                        <td>DATE</td>
-                                        <td id="datae"> <input type="date" name="requestdate" id="date" style="border:none;"></td>
-                                    </tr>
-                                    <!-- <tr>
-                                        <td>STAFF NAME</td>
-                                        <td id="datae"> <input type="text" name="staffName" placeholder="Your name" style="border:none; width: 100%;"></td>
-                                    </tr> -->
-                                    <tr>
-                    <td>STAFF NAME</td>
-                    <td id="datae">
-                        <b><input type="text" 
-                            name="staffName" 
-                            value="<%= user %>" 
-                            readonly 
-                            style="font-weight: bold;font-family:Verdana, Geneva, Tahoma, sans-serif; color: darkblue; border:none; width: 100%; background-color: #f4f4f4; cursor: not-allowed;"
-                            title="Name is automatically set from your login session"></b>
-                    </td>
-                </tr>
-                     <tr>
-                        <td id="datae"  > DEPARTMENT</td>
-                        <td><select name="department"><option value="">Department</option>
-                        <option value="Admin">Admin</option>
-                        <option value="HR">HR</option>
-                        <option value="Finance">Finance</option>
-                        <option value="Customer Experience">Customer Experience</option>
-                        <option value="IT">IT</option>
-                        <option value="BD">BD</option>
-                        </select></td>
-                        
+    <div class="tables">
+        <section id="date">
+            <form action="/requisition/submit-to-hod" method="POST">
+                <table id="table1">
+                    <tr>
+                        <td>DATE</td>
+                        <td id="datae"> <input type="date" name="requestdate" style="border:none;"></td>
+                    </tr>
+                    <tr>
+                        <td>STAFF NAME</td>
+                        <td id="datae">
+                            <input type="text" name="staffName" value="<%= user %>" readonly 
+                            style="font-weight: bold; color: darkblue; border:none; width: 100%; background-color: #f4f4f4; cursor: not-allowed;">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>DEPARTMENT</td>
+                        <td>
+                            <select name="department" required>
+                                <option value="">Select Department</option>
+                                <option value="Admin">Admin</option>
+                                <option value="HR">HR</option>
+                                <option value="Finance">Finance</option>
+                                <option value="Marketing">Marketing </option>
+                                <option value="Operations">Operations</option>
+                                <option value="Legal">Legal</option>
+                                <option value="CEO">CEO</option>
+                                <option value="Customer Experience">Customer Experience</option>
+                                <option value="IT">IT</option>
+                                <option value="BD">BD</option>
+                            </select>
+                        </td>
                     </tr>   
                 </table>
-            <!-- keep form open until after table2 -->
-            </section>
-        </div>     
 
-        <div class="tables2">
-            <section id="costs">
                 <table id="table2">
                     <thead>
-                    <tr style="font-weight: bold;">
-                        <td>S/N</td>
-                        <td>Budget Line </td>
-                        <td>Cost centre </td>
-                        <td>Item Description</td>
-                        <td>Quantity </td>
-                        <td>Unit </td>
-                        <td>VAT</td>
-                        <td>Total</td>
-                    </tr>
+                        <tr style="font-weight: bold;">
+                            <td>S/N</td>
+                            <td>Budget Line</td>
+                            <td>Cost centre</td>
+                            <td>Item Description</td>
+                            <td>Quantity</td>
+                            <td>Unit</td>
+                            <td>VAT</td>
+                            <td>Total</td>
+                            <td></td>
+                        </tr>
                     </thead>
                     <tbody id="itembody">
-                     <tr>
-                        <td class="sn-cell">1</td>
-                        <td> <input type="text" name="budgetLine[]" style="border:none;"></td>
-                        <td> <input type="text" name="costCentre[]" style="border:none;"></td>
-                        <td> <textarea name="description[]" style="border:none;"></textarea></td>
-                        <td> <input type="number" name="qty[]" class="qty-input" min="0" style="border:none;"></td>
-                        <td> <input type="number" name="unit[]" class="unit-input" min="0" step="0.01" style="border:none;"></td>
-                        <td> <input type="number" name="VAT[]" class="VAT-input" readonly style="border:none;"></td>
-                        <td> <input type="number" name="total[]" class="total-input" readonly style="border:none;"></td>
-                        <td><button type="button" id="add-row" onclick="addRow()">+</button></td>
-                    </tr>
+                        <tr>
+                            <td class="sn-cell">1</td>
+                            <td><input type="text" name="budgetLine[]" style="border:none;"></td>
+                            <td><input type="text" name="costCentre[]" style="border:none;"></td>
+                            <td><textarea name="description[]" style="border:none;"></textarea></td>
+                            <td><input type="number" name="qty[]" class="qty-input" min="0" style="border:none;"></td>
+                            <td><input type="number" name="unit[]" class="unit-input" min="0" step="0.01" style="border:none;"></td>
+                            <td><input type="number" name="VAT[]" class="VAT-input" readonly style="border:none;"></td>
+                            <td><input type="number" name="total[]" class="total-input" readonly style="border:none;"></td>
+                            <td><button type="button" id="add-row" onclick="addRow()">+</button></td>
+                        </tr>
                     </tbody>
                     <tfoot>
                         <tr>
@@ -220,96 +213,98 @@
                         </tr>
                         <tr>
                             <td colspan="9" style="text-align: center; padding: 12px 0;">
-                                <button id="submit" type="submit">Request</button>
+                                <button id="submit" type="submit" style="padding: 10px 30px; background: #0071bc; color: white; border: none; border-radius: 5px; cursor: pointer;">Request</button>
                             </td>
                         </tr>
-                
-                    
-                    
+                    </tfoot>
                 </table>
-            
             </form>
-            </section>
-        </div>
+        </section>
+    </div>
 
-    <!-- <div class="approval">
-        <section id="signees">
-            <div id="signees">
-            <p><b>Prepared by:</b></p>
-            <p>Date:</p>
-            </div><br> </section>
-        
-            <section id="signees">
-            <div id="signees"><p>Checked by:</p>
-            <p>Signature:</p>
-           </div>
-        <br></section>
-        
-             <section id="signees">
-        
-            <div id="signees"><p>Authorized by Finance:</p>
-            <p>Signature:</p>
-            </div> </section>
-        <br>
-                <section id="signees">
-            <div id="signees"><p>Approved by:</p>
-            <p>Signature:</p>
-            </div></section>
-         -->
+    <% 
+        // 1. Logic to filter requisitions based on user role
+        let visibleRequisitions = [];
+        if (typeof requisitions !== 'undefined' && requisitions !== null) {
+            const currentUser = (typeof user === 'object') ? user.username : user;
+            const currentRole = (typeof user === 'object' && user.role) ? user.role.toLowerCase() : '';
+            const currentDept = (typeof user === 'object' && user.department) ? user.department.toLowerCase() : '';
 
-<% 
-  // 1. Filter the data based on user permissions
-  let visibleRequisitions = [];
+            if (currentRole === 'finance' || currentRole === 'director' || currentUser === 'brian') {
+                visibleRequisitions = requisitions;
+            } else if (currentRole === 'hod') {
+                visibleRequisitions = requisitions.filter(r => r.department && currentDept && r.department.toLowerCase() === currentDept);
+            } else {
+                visibleRequisitions = requisitions.filter(r => r.staffName === currentUser || r.submittedBy === currentUser);
+            }
+        }
+    %>
 
-  if (user.username === 'finance' || user.username === 'brian') {
-      // Full access: see everything
-      visibleRequisitions = requisitions;
-  } else if (user.username === 'hod') {
-      // Departmental access: see only their department
-      visibleRequisitions = requisitions.filter(r => r.department === user.department);
-  } else {
-      // Staff access: see only their own submissions
-      visibleRequisitions = requisitions.filter(r => r.submittedBy === user.username);
-  }
-%>
-
-
-
-
-    <!-- Requisition progress tracker -->
-    <section class="progress-tracker" style="margin-top: 20px; width: 100%;">
+    <section class="progress-tracker" style="margin: 20px;">
         <h3>My Requisition Progress</h3>
-        <% if (requisitions && requisitions.length > 0) { %>
-            <table id="tracking-table" style="width: 100%; border-collapse: collapse;">
+        
+        <% if (visibleRequisitions && visibleRequisitions.length > 0) { %>
+            <table id="tracking-table" style="width: 100%; border-collapse: collapse; background: white;">
                 <thead>
                     <tr>
-                        <th style="border: 1px solid #ddd; padding: 8px;">ID</th>
-                        <th style="border: 1px solid #ddd; padding: 8px;">Staff-Name</th>
-                        <th style="border: 1px solid #ddd; padding: 8px;">Department</th>
-                        <th style="border: 1px solid #ddd; padding: 8px;">Request Date</th>
-                        <th style="border: 1px solid #ddd; padding: 8px;">Status</th>
-                        <th style="border: 1px solid #ddd; padding: 8px;">Action</th>
+                        <th style="border: 1px solid #ddd; padding: 12px;">ID</th>
+                        <th style="border: 1px solid #ddd; padding: 12px;">Staff Name</th>
+                        <th style="border: 1px solid #ddd; padding: 12px;">Department</th>
+                        <th style="border: 1px solid #ddd; padding: 12px;">Request Date</th>
+                        <th style="border: 1px solid #ddd; padding: 12px;">Status & Reason</th>
+                        <th style="border: 1px solid #ddd; padding: 12px;">Action</th>
                     </tr>
                 </thead>
                 <tbody>
-                <% requisitions.forEach(req => { %>
-                <tr>
-                    <td style="border: 1px solid #ddd; padding: 8px;"><%= req.id %></td>
-                    <td style="border: 1px solid #ddd; padding: 8px;"><%= req.staffName %></td>
-                    <td style="border: 1px solid #ddd; padding: 8px;"><%= req.department %></td>
-                    <td style="border: 1px solid #ddd; padding: 8px;"><%= new Date(req.requestDate).toLocaleDateString() %></td>
-                    <td style="border: 1px solid #ddd; padding: 8px;"><strong><%= req.status %></strong></td>
-                    <td style="border: 1px solid #ddd; padding: 8px;"><a href="/hod/approval/<%= req.id %>">View</a></td>
-                </tr>
-                <% }) %>
+                    <% visibleRequisitions.forEach(req => { %>
+                        <tr>
+                            <td style="border: 1px solid #ddd; padding: 12px;"><%= req.id %></td>
+                            <td style="border: 1px solid #ddd; padding: 12px;"><%= req.staffName %></td>
+                            <td style="border: 1px solid #ddd; padding: 12px;"><%= req.department %></td>
+                            <td style="border: 1px solid #ddd; padding: 12px;">
+                                <%= req.requestDate ? new Date(req.requestDate).toLocaleDateString() : 'N/A' %>
+                            </td>
+                            <td style="border: 1px solid #ddd; padding: 12px;">
+                                <% if (req.status && req.status.includes('REJECTED')) { %>
+                                    <span class="badge bg-danger">Rejected</span>
+                                <% } else if (req.status === 'APPROVED') { %>
+                                    <span class="badge bg-success">Approved</span>
+                                <% } else { %>
+                                    <span class="badge bg-warning"><%= req.status %></span>
+                                <% } %>
+
+                                <% 
+                                    let historyArr = Array.isArray(req.history) ? req.history : [];
+                                    let rejectionEntry = historyArr.find(h => 
+                                        (h.action === 'Rejected') || (h.stage && h.stage.includes('Rejected'))
+                                    );
+                                %>
+
+                                <% if (rejectionEntry) { %>
+                                    <div class="text-danger" style="font-size: 0.75rem; margin-top: 5px;">
+                                        <strong>Reason:</strong> <%= rejectionEntry.comments %>
+                                    </div>
+                                <% } %>
+                            </td>
+                                                <td style="border: 1px solid #ddd; padding: 12px;">
+                            <% if (req.status.includes('REJECTED') || req.status === 'APPROVED') { %>
+                                <a href="/requisition/view/<%= req.id %>" class="btn-review" style="background: #d9534f; color: white;">View Decision</a>
+                            <% } else { %>
+                                <a href="/requisition/view/<%= req.id %>" class="btn-review" style="background: #0071bc; color: white;">Track Progress</a>
+                            <% } %>
+                        </td>
+                            
+                        </tr>
+                    <% }) %>
                 </tbody>
             </table>
         <% } else { %>
-            <p>No previous requisitions found yet. Submit one and it will appear here.</p>
+            <p style="padding: 20px; background: white; border-radius: 8px;">
+                No requisitions found. Submit one and it will appear here.
+            </p>
         <% } %>
     </section>
 
-        <script src="/scripts/table-logic.js"></script>
-    </body>
-
+    <script src="/scripts/table-logic.js"></script>
+</body>
 </html>
